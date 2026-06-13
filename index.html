@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>London Lens — Your Guide to Living in London</title>
+  <meta name="description" content="Digital resources, expert consultations and tools for newcomers relocating to London from Bangladesh, India, Pakistan, Nigeria and beyond."/>
+  <meta property="og:title" content="London Lens — Your Guide to Living in London"/>
+  <meta property="og:description" content="Guides, consultations and tools for new Londoners."/>
+  <meta property="og:type" content="website"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #0d1b2a;
+      --navy2:  #152436;
+      --gold:   #c9a84c;
+      --gold2:  #e2c97e;
+      --cream:  #f9f6f0;
+      --cream2: #f0ebe0;
+      --ink:    #1a1f2e;
+      --muted:  #6b7280;
+      --border: #e2ddd5;
+      --serif:  'Playfair Display', Georgia, serif;
+      --sans:   'Outfit', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--cream);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--navy);
+      border-bottom: 1px solid rgba(201,168,76,.15);
+      height: 60px;
+      display: flex; align-items: center;
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 24px;
+      width: 100%;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      font-family: var(--serif);
+      color: var(--gold);
+      font-size: 20px; font-weight: 700;
+      display: flex; align-items: center; gap: 9px;
+      text-decoration: none;
+    }
+    .logo-mark {
+      width: 30px; height: 30px;
+      background: rgba(201,168,76,.15);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-links { display: flex; align-items: center; gap: 6px; }
+    .nav-a {
+      color: rgba(255,255,255,.6);
+      font-size: 14px; font-weight: 500;
+      text-decoration: none;
+      padding: 6px 12px; border-radius: 6px;
+      transition: color .2s, background .2s;
+    }
+    .nav-a:hover { color: var(--gold); background: rgba(201,168,76,.08); }
+    .nav-cta {
+      background: var(--gold); color: var(--navy);
+      font-size: 13.5px; font-weight: 600;
+      padding: 8px 18px; border-radius: 7px;
+      text-decoration: none;
+      transition: opacity .2s, transform .2s;
+    }
+    .nav-cta:hover { opacity: .88; transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--navy);
+      position: relative; overflow: hidden;
+      padding: 96px 24px 80px;
+      text-align: center;
+    }
+    .hero-glow {
+      position: absolute; bottom: -180px; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 400px;
+      background: radial-gradient(ellipse, rgba(201,168,76,.13) 0%, transparent 68%);
+      pointer-events: none;
+    }
+    .hero-skyline {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 110px; overflow: hidden; pointer-events: none;
+      opacity: 1;
+    }
+    .skyline-svg { display: block; }
+    .hero-inner {
+      position: relative; z-index: 2;
+      max-width: 700px; margin: 0 auto;
+    }
+    .pill-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(201,168,76,.1);
+      border: 1px solid rgba(201,168,76,.22);
+      color: var(--gold2);
+      font-size: 11.5px; font-weight: 600;
+      letter-spacing: 1.8px; text-transform: uppercase;
+      padding: 6px 16px; border-radius: 20px;
+      margin-bottom: 28px;
+    }
+    .pill-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--gold);
+    }
+    .hero h1 {
+      font-family: var(--serif);
+      color: #fff;
+      font-size: clamp(36px, 5.5vw, 62px);
+      font-weight: 700; line-height: 1.12;
+      margin-bottom: 20px;
+    }
+    .hero h1 em { color: var(--gold); font-style: italic; }
+    .hero-sub {
+      color: rgba(255,255,255,.58);
+      font-size: 17px; line-height: 1.75;
+      margin-bottom: 40px;
+    }
+    .hero-btns {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+      margin-bottom: 60px;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 13px 28px; border-radius: 8px;
+      font-family: var(--sans); font-size: 15px; font-weight: 600;
+      text-decoration: none; cursor: pointer; border: none;
+      transition: all .2s; letter-spacing: .2px;
+    }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,.3); }
+    .btn-outline {
+      background: transparent; color: rgba(255,255,255,.8);
+      border: 1.5px solid rgba(255,255,255,.22);
+    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+    .trust-row {
+      display: flex; gap: 28px; justify-content: center; flex-wrap: wrap;
+      padding-top: 28px;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+    .trust-item {
+      display: flex; align-items: center; gap: 7px;
+      color: rgba(255,255,255,.45); font-size: 13px;
+    }
+    .trust-item span:first-child { color: var(--gold); font-size: 15px; }
+
+    /* ── SECTIONS ── */
+    .section { padding: 76px 24px; }
+    .section-sm { padding: 52px 24px; }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    .wrap-sm { max-width: 700px; margin: 0 auto; }
+
+    .eyebrow {
+      font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--gold); font-weight: 600; margin-bottom: 10px;
+    }
+    h2.section-title {
+      font-family: var(--serif); font-size: clamp(26px, 3.5vw, 36px);
+      font-weight: 700; color: var(--navy); line-height: 1.2; margin-bottom: 12px;
+    }
+    .section-sub {
+      color: var(--muted); font-size: 16px; line-height: 1.7; max-width: 500px;
+    }
+
+    /* ── CATEGORIES ── */
+    .cats { background: #fff; border-bottom: 1px solid var(--border); }
+    .cat-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    }
+    .cat-card {
+      padding: 22px 16px; border-radius: 12px;
+      background: var(--cream); border: 1px solid var(--border);
+      text-align: center; cursor: pointer; text-decoration: none;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+      display: block;
+    }
+    .cat-card:hover {
+      border-color: var(--gold); transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(201,168,76,.12);
+    }
+    .cat-icon { font-size: 30px; margin-bottom: 8px; }
+    .cat-name { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
+    .cat-count { font-size: 12px; color: var(--muted); }
+
+    /* ── PRODUCTS ── */
+    .products-bg { background: var(--cream); }
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .product-card {
+      background: #fff; border-radius: 14px; border: 1px solid var(--border);
+      overflow: hidden; text-decoration: none; display: block;
+      transition: transform .22s, box-shadow .22s;
+    }
+    .product-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(13,27,42,.12); }
+    .product-thumb {
+      height: 160px; display: flex; align-items: center; justify-content: center;
+      font-size: 48px; position: relative;
+    }
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 10.5px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase;
+    }
+    .badge-navy { background: var(--navy); color: var(--gold); }
+    .badge-gold { background: rgba(201,168,76,.14); color: #7a5e18; }
+    .abs-badge { position: absolute; top: 10px; right: 10px; }
+    .product-body { padding: 16px 18px 20px; }
+    .product-title {
+      font-family: var(--serif); font-size: 16px; font-weight: 600;
+      color: var(--navy); margin-bottom: 5px; line-height: 1.3;
+    }
+    .product-desc { font-size: 13px; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
+    .product-foot { display: flex; align-items: center; justify-content: space-between; }
+    .price { font-size: 20px; font-weight: 700; color: var(--navy); }
+    .price-old { font-size: 13px; color: var(--muted); text-decoration: line-through; margin-right: 4px; }
+    .btn-add {
+      background: var(--navy); color: var(--gold);
+      border: none; border-radius: 7px;
+      padding: 7px 14px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: var(--sans);
+      transition: background .2s;
+    }
+    .btn-add:hover { background: #1e3448; }
+
+    /* ── CONSULT ── */
+    .consult-bg { background: #fff; }
+    .consult-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .consult-card {
+      border: 2px solid var(--border); border-radius: 14px;
+      padding: 28px 22px; position: relative;
+      transition: border-color .2s, box-shadow .2s;
+      background: #fff;
+    }
+    .consult-card:hover { border-color: var(--gold); box-shadow: 0 8px 28px rgba(201,168,76,.15); }
+    .consult-card.featured { border-color: var(--gold); }
+    .popular-tag {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--gold); color: var(--navy);
+      font-size: 10.5px; font-weight: 700; letter-spacing: .5px;
+      padding: 3px 14px; border-radius: 12px; white-space: nowrap;
+    }
+    .tier-name { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+    .tier-dur { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+    .tier-price { font-size: 34px; font-weight: 700; color: var(--navy); margin-bottom: 20px; }
+    .tier-feats { list-style: none; }
+    .tier-feats li {
+      font-size: 13.5px; color: var(--ink); padding: 5px 0;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .check { color: var(--gold); font-weight: 700; }
+    .consult-btn {
+      display: block; margin-top: 24px; text-align: center;
+      background: var(--navy); color: var(--gold);
+      border: none; width: 100%; padding: 12px;
+      border-radius: 8px; font-family: var(--sans);
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: background .2s;
+      text-decoration: none;
+    }
+    .consult-card.featured .consult-btn { background: var(--gold); color: var(--navy); }
+    .consult-btn:hover { opacity: .88; }
+
+    /* ── LEAD MAGNET ── */
+    .lead-bg { background: var(--cream2); }
+    .lead-box {
+      background: linear-gradient(135deg, var(--navy) 0%, #1e3448 100%);
+      border-radius: 20px; padding: 52px 40px;
+      text-align: center; position: relative; overflow: hidden;
+      border: 1px solid rgba(201,168,76,.15);
+    }
+    .lead-glow {
+      position: absolute; top: -80px; right: -80px;
+      width: 260px; height: 260px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,168,76,.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .lead-box h3 {
+      font-family: var(--serif); color: #fff; font-size: 26px;
+      margin-bottom: 10px; position: relative; z-index: 1;
+    }
+    .lead-box p { color: rgba(255,255,255,.58); font-size: 15px; margin-bottom: 28px; position: relative; z-index: 1; }
+    .lead-form { display: flex; gap: 10px; max-width: 420px; margin: 0 auto; position: relative; z-index: 1; }
+    .lead-input {
+      flex: 1; padding: 12px 16px; border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.09); color: #fff;
+      font-family: var(--sans); font-size: 14px; outline: none;
+      transition: border-color .2s;
+    }
+    .lead-input::placeholder { color: rgba(255,255,255,.38); }
+    .lead-input:focus { border-color: var(--gold); }
+    .lead-small { font-size: 11px; color: rgba(255,255,255,.28); margin-top: 12px; position: relative; z-index: 1; }
+
+    /* ── TESTIMONIALS ── */
+    .testi-bg { background: #fff; }
+    .testi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .testi-card {
+      background: var(--cream); border: 1px solid var(--border);
+      border-radius: 14px; padding: 22px;
+    }
+    .stars { color: var(--gold); font-size: 14px; margin-bottom: 10px; }
+    .testi-text {
+      font-size: 13.5px; color: var(--ink); line-height: 1.7;
+      font-style: italic; margin-bottom: 16px;
+    }
+    .testi-author { display: flex; align-items: center; gap: 10px; }
+    .testi-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--cream2); display: flex; align-items: center;
+      justify-content: center; font-size: 18px; flex-shrink: 0;
+    }
+    .testi-name { font-size: 13px; font-weight: 600; color: var(--navy); }
+    .testi-from { font-size: 11.5px; color: var(--muted); }
+
+    /* ── TOOLS PREVIEW ── */
+    .tools-bg { background: var(--cream); }
+    .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .tool-card {
+      background: #fff; border: 1px solid var(--border); border-radius: 14px;
+      padding: 26px 22px;
+    }
+    .tool-icon { font-size: 32px; margin-bottom: 12px; }
+    .tool-name { font-family: var(--serif); font-size: 17px; color: var(--navy); margin-bottom: 7px; }
+    .tool-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    /* ── BLOG ── */
+    .blog-bg { background: #fff; }
+    .blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .blog-card {
+      border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+      background: #fff; text-decoration: none; display: block;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .blog-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,27,42,.09); }
+    .blog-thumb {
+      height: 130px; background: var(--cream);
+      display: flex; align-items: center; justify-content: center; font-size: 44px;
+    }
+    .blog-body { padding: 16px 18px 20px; }
+    .blog-meta { font-size: 11.5px; color: var(--muted); margin-bottom: 7px; }
+    .blog-title {
+      font-family: var(--serif); font-size: 16px; font-weight: 600;
+      color: var(--navy); line-height: 1.35; margin-bottom: 7px;
+    }
+    .blog-excerpt { font-size: 13px; color: var(--muted); line-height: 1.55; }
+
+    /* ── MEMBERSHIP ── */
+    .mem-bg { background: var(--cream2); }
+    .mem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .mem-card {
+      background: #fff; border: 2px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      transition: transform .22s, box-shadow .22s;
+    }
+    .mem-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(13,27,42,.1); }
+    .mem-card.featured { border-color: var(--gold); }
+    .mem-pop { background: var(--gold); color: var(--navy); text-align: center; font-size: 10.5px; font-weight: 700; letter-spacing: 1px; padding: 4px 0; }
+    .mem-header { padding: 26px 22px 20px; }
+    .mem-card.featured .mem-header { background: var(--navy); }
+    .mem-name { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+    .mem-card.featured .mem-name { color: var(--gold); }
+    .mem-price { font-size: 34px; font-weight: 700; color: var(--navy); }
+    .mem-card.featured .mem-price { color: #fff; }
+    .mem-per { font-size: 13px; color: var(--muted); font-weight: 400; }
+    .mem-card.featured .mem-per { color: rgba(255,255,255,.4); }
+    .mem-feats { padding: 16px 22px; list-style: none; }
+    .mem-feats li {
+      font-size: 13.5px; padding: 7px 0; border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px; color: var(--ink);
+    }
+    .yes { color: var(--gold); }
+    .no  { color: var(--border); }
+    .mem-foot { padding: 0 22px 22px; }
+    .mem-btn {
+      display: block; width: 100%; padding: 13px; border-radius: 8px;
+      text-align: center; font-family: var(--sans); font-size: 14px; font-weight: 600;
+      cursor: pointer; border: 1.5px solid var(--border); background: #fff; color: var(--navy);
+      text-decoration: none; transition: all .2s;
+    }
+    .mem-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .mem-card.featured .mem-foot .mem-btn { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+    .mem-card.featured .mem-foot .mem-btn:hover { background: var(--gold2); }
+
+    /* ── CTA BANNER ── */
+    .cta-banner {
+      background: var(--navy); padding: 80px 24px; text-align: center;
+    }
+    .cta-banner h2 {
+      font-family: var(--serif); color: #fff; font-size: clamp(26px, 3.5vw, 38px);
+      margin-bottom: 12px;
+    }
+    .cta-banner h2 em { color: var(--gold); font-style: italic; }
+    .cta-banner p { color: rgba(255,255,255,.55); font-size: 16px; margin-bottom: 32px; }
+    .cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    /* ── FOOTER ── */
+    footer { background: #060e18; padding: 56px 24px 28px; }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px;
+    }
+    .footer-logo { font-family: var(--serif); color: var(--gold); font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+    .footer-tagline { font-size: 13px; color: rgba(255,255,255,.38); line-height: 1.65; max-width: 220px; }
+    .footer-head { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.7); margin-bottom: 14px; }
+    .footer-link { display: block; font-size: 13px; color: rgba(255,255,255,.38); padding: 4px 0; text-decoration: none; transition: color .2s; }
+    .footer-link:hover { color: var(--gold); }
+    .footer-bottom {
+      max-width: 1100px; margin: 0 auto;
+      border-top: 1px solid rgba(255,255,255,.07); padding-top: 22px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+      font-size: 12px; color: rgba(255,255,255,.25);
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      background: var(--navy); color: #fff;
+      padding: 12px 20px; border-radius: 10px;
+      border-left: 4px solid var(--gold);
+      font-size: 14px; font-weight: 500;
+      box-shadow: 0 12px 40px rgba(0,0,0,.3);
+      display: none; align-items: center; gap: 10px;
+      max-width: 320px; animation: slideIn .3s ease;
+    }
+    #toast.show { display: flex; }
+
+    @keyframes slideIn {
+      from { opacity:0; transform:translateX(24px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(18px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fade-up { opacity:0; animation: fadeUp .6s ease forwards; }
+    .d1 { animation-delay: .1s; }
+    .d2 { animation-delay: .2s; }
+    .d3 { animation-delay: .35s; }
+    .d4 { animation-delay: .5s; }
+    .d5 { animation-delay: .65s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .cat-grid     { grid-template-columns: repeat(2, 1fr); }
+      .consult-grid { grid-template-columns: 1fr; }
+      .testi-grid   { grid-template-columns: repeat(2, 1fr); }
+      .tools-grid   { grid-template-columns: repeat(2, 1fr); }
+      .blog-grid    { grid-template-columns: repeat(2, 1fr); }
+      .mem-grid     { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .nav-links .nav-a { display: none; }
+      .cat-grid   { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .testi-grid { grid-template-columns: 1fr; }
+      .tools-grid { grid-template-columns: 1fr; }
+      .blog-grid  { grid-template-columns: 1fr; }
+      .lead-form  { flex-direction: column; }
+      .footer-inner { grid-template-columns: 1fr; gap: 28px; }
+      .hero { padding: 72px 20px 64px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <div class="logo-mark">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect x="1" y="12" width="16" height="2" rx="1" fill="#c9a84c"/>
+          <rect x="2" y="4" width="2" height="8" rx="1" fill="#c9a84c"/>
+          <rect x="6" y="6" width="2" height="6" rx="1" fill="#c9a84c"/>
+          <rect x="10" y="2" width="2" height="10" rx="1" fill="#c9a84c"/>
+          <rect x="14" y="7" width="2" height="5" rx="1" fill="#c9a84c"/>
+        </svg>
+      </div>
+      London Lens
+    </a>
+    <div class="nav-links">
+      <a class="nav-a" href="#products">Products</a>
+      <a class="nav-a" href="#consultations">Consultations</a>
+      <a class="nav-a" href="#tools">Tools</a>
+      <a class="nav-a" href="#blog">Blog</a>
+      <a class="nav-a" href="#membership">Membership</a>
+      <a class="nav-cta" href="#lead">Get Free Guide</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-glow"></div>
+
+  <!-- London skyline silhouette -->
+  <div class="hero-skyline">
+    <svg class="skyline-svg" viewBox="0 0 1440 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" width="100%" height="110">
+      <!-- Big Ben -->
+      <rect x="40" y="18" width="8" height="92" fill="rgba(201,168,76,.18)"/>
+      <rect x="36" y="12" width="16" height="6" fill="rgba(201,168,76,.2)"/>
+      <rect x="43" y="5" width="2" height="7" fill="rgba(201,168,76,.28)"/>
+      <!-- Parliament -->
+      <rect x="60" y="55" width="100" height="55" fill="rgba(201,168,76,.08)"/>
+      <rect x="62" y="44" width="8" height="11" fill="rgba(201,168,76,.12)"/>
+      <rect x="78" y="48" width="6" height="7" fill="rgba(201,168,76,.1)"/>
+      <!-- The Shard -->
+      <polygon points="260,110 282,110 277,8 265,8" fill="rgba(201,168,76,.14)"/>
+      <!-- Gherkin -->
+      <ellipse cx="330" cy="70" rx="14" ry="55" fill="rgba(255,255,255,.05)"/>
+      <!-- Walkie-Talkie -->
+      <rect x="380" y="45" width="38" height="65" rx="3" fill="rgba(255,255,255,.05)"/>
+      <rect x="378" y="38" width="42" height="7" rx="2" fill="rgba(255,255,255,.07)"/>
+      <!-- Canary Wharf -->
+      <rect x="460" y="28" width="28" height="82" fill="rgba(201,168,76,.1)"/>
+      <rect x="468" y="20" width="12" height="8" fill="rgba(201,168,76,.14)"/>
+      <rect x="473" y="12" width="2" height="8" fill="rgba(201,168,76,.22)"/>
+      <!-- Cheesegrater -->
+      <polygon points="540,110 568,110 549,20" fill="rgba(255,255,255,.05)"/>
+      <!-- St Paul's dome -->
+      <rect x="620" y="65" width="55" height="45" fill="rgba(255,255,255,.05)"/>
+      <ellipse cx="648" cy="58" rx="22" ry="14" fill="rgba(255,255,255,.07)"/>
+      <rect x="646" y="38" width="4" height="20" fill="rgba(255,255,255,.1)"/>
+      <!-- Tate Modern chimney -->
+      <rect x="730" y="14" width="12" height="96" fill="rgba(255,255,255,.07)"/>
+      <rect x="724" y="55" width="24" height="55" fill="rgba(255,255,255,.04)"/>
+      <!-- NatWest Tower -->
+      <rect x="800" y="35" width="22" height="75" fill="rgba(255,255,255,.05)"/>
+      <rect x="808" y="28" width="6" height="7" fill="rgba(255,255,255,.07)"/>
+      <!-- Fillers -->
+      <rect x="850" y="70" width="22" height="40" fill="rgba(255,255,255,.04)"/>
+      <rect x="884" y="58" width="18" height="52" fill="rgba(255,255,255,.04)"/>
+      <rect x="912" y="75" width="30" height="35" fill="rgba(255,255,255,.04)"/>
+      <rect x="955" y="50" width="15" height="60" fill="rgba(201,168,76,.06)"/>
+      <rect x="982" y="68" width="28" height="42" fill="rgba(255,255,255,.04)"/>
+      <rect x="1022" y="62" width="20" height="48" fill="rgba(255,255,255,.04)"/>
+      <rect x="1055" y="78" width="35" height="32" fill="rgba(255,255,255,.04)"/>
+      <rect x="1100" y="44" width="14" height="66" fill="rgba(201,168,76,.06)"/>
+      <rect x="1125" y="72" width="28" height="38" fill="rgba(255,255,255,.04)"/>
+      <rect x="1165" y="58" width="18" height="52" fill="rgba(255,255,255,.04)"/>
+      <rect x="1195" y="80" width="40" height="30" fill="rgba(255,255,255,.04)"/>
+      <rect x="1248" y="48" width="16" height="62" fill="rgba(201,168,76,.07)"/>
+      <rect x="1276" y="70" width="30" height="40" fill="rgba(255,255,255,.04)"/>
+      <rect x="1318" y="58" width="22" height="52" fill="rgba(255,255,255,.04)"/>
+      <rect x="1354" y="42" width="18" height="68" fill="rgba(201,168,76,.06)"/>
+      <rect x="1386" y="75" width="32" height="35" fill="rgba(255,255,255,.04)"/>
+      <!-- Thames shimmer -->
+      <rect x="0" y="102" width="1440" height="8" fill="rgba(201,168,76,.06)"/>
+    </svg>
+  </div>
+
+  <div class="hero-inner">
+    <div class="pill-eyebrow fade-up d1"><span class="pill-dot"></span>London Relocation Platform</div>
+    <h1 class="fade-up d2">
+      Your Guide to<br><em>Living & Thriving</em><br>in London
+    </h1>
+    <p class="hero-sub fade-up d3">
+      Trusted digital resources, expert consultations and free tools
+      for newcomers from Bangladesh, India, Pakistan, Nigeria and beyond.
+    </p>
+    <div class="hero-btns fade-up d4">
+      <a href="#products" class="btn btn-gold">Browse Products →</a>
+      <a href="#consultations" class="btn btn-outline">Book a Consultation</a>
+    </div>
+    <div class="trust-row fade-up d5">
+      <div class="trust-item"><span>✦</span> 12,400+ Newcomers Helped</div>
+      <div class="trust-item"><span>✦</span> Secure UK Payments</div>
+      <div class="trust-item"><span>✦</span> Instant Downloads</div>
+      <div class="trust-item"><span>✦</span> 4.9★ Rated</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CATEGORIES ── -->
+<section class="section-sm cats">
+  <div class="wrap">
+    <div class="cat-grid">
+      <a href="#products" class="cat-card">
+        <div class="cat-icon">🗺️</div>
+        <div class="cat-name">Relocation</div>
+        <div class="cat-count">4 guides</div>
+      </a>
+      <a href="#products" class="cat-card">
+        <div class="cat-icon">✈️</div>
+        <div class="cat-name">Travel</div>
+        <div class="cat-count">3 guides</div>
+      </a>
+      <a href="#products" class="cat-card">
+        <div class="cat-icon">📸</div>
+        <div class="cat-name">Photography</div>
+        <div class="cat-count">3 guides</div>
+      </a>
+      <a href="#products" class="cat-card">
+        <div class="cat-icon">💼</div>
+        <div class="cat-name">Job Search</div>
+        <div class="cat-count">3 toolkits</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRODUCTS ── -->
+<section class="section products-bg" id="products">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:36px;gap:16px;flex-wrap:wrap;">
+      <div>
+        <div class="eyebrow">Digital Marketplace</div>
+        <h2 class="section-title">Guides, Maps & Toolkits</h2>
+        <p class="section-sub">Instantly downloadable resources written for newcomers to London.</p>
+      </div>
+    </div>
+    <div class="product-grid">
+
+      <a href="#" class="product-card" onclick="addCart(event,'London Relocation Starter Guide','£19.99')">
+        <div class="product-thumb" style="background:linear-gradient(135deg,#eef4ff,#dce8ff);">
+          📦<span class="badge badge-navy abs-badge">Bestseller</span>
+        </div>
+        <div class="product-body">
+          <div class="badge badge-gold" style="margin-bottom:8px;">Relocation</div>
+          <div class="product-title">London Relocation Starter Guide</div>
+          <div class="product-desc">68-page complete relocation manual covering housing, banking, NHS & utilities.</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">★★★★★ (247) · 68 pages</div>
+          <div class="product-foot">
+            <div><span class="price-old">£29.99</span><span class="price">£19.99</span></div>
+            <button class="btn-add">+ Add</button>
+          </div>
+        </div>
+      </a>
+
+      <a href="#" class="product-card" onclick="addCart(event,'First 30 Days in London','£14.99')">
+        <div class="product-thumb" style="background:linear-gradient(135deg,#f0fff4,#dcf5e7);">📅</div>
+        <div class="product-body">
+          <div class="badge badge-gold" style="margin-bottom:8px;">Relocation</div>
+          <div class="product-title">First 30 Days in London</div>
+          <div class="product-desc">Day-by-day action plan — never feel lost or overwhelmed in your first month.</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">★★★★★ (183) · 44 pages</div>
+          <div class="product-foot">
+            <span class="price">£14.99</span>
+            <button class="btn-add">+ Add</button>
+          </div>
+        </div>
+      </a>
+
+      <a href="#" class="product-card" onclick="addCart(event,'Hidden London Photography Map','£12.99')">
+        <div class="product-thumb" style="background:linear-gradient(135deg,#fff0f4,#fde8ec);">
+          📸<span class="badge badge-navy abs-badge">Top Rated</span>
+        </div>
+        <div class="product-body">
+          <div class="badge badge-gold" style="margin-bottom:8px;">Photography</div>
+          <div class="product-title">London Photography Spot Map</div>
+          <div class="product-desc">150+ locations with GPS coordinates, best times and camera settings.</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">★★★★★ (211) · 60 pages</div>
+          <div class="product-foot">
+            <span class="price">£12.99</span>
+            <button class="btn-add">+ Add</button>
+          </div>
+        </div>
+      </a>
+
+      <a href="#" class="product-card" onclick="addCart(event,'UK CV Template Bundle','£9.99')">
+        <div class="product-thumb" style="background:linear-gradient(135deg,#fffbf0,#fef3d0);">💼</div>
+        <div class="product-body">
+          <div class="badge badge-gold" style="margin-bottom:8px;">Job Search</div>
+          <div class="product-title">UK CV Template Bundle</div>
+          <div class="product-desc">5 ATS-optimised CV templates + 3 cover letter templates for the UK job market.</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">★★★★★ (312) · 5 templates</div>
+          <div class="product-foot">
+            <span class="price">£9.99</span>
+            <button class="btn-add">+ Add</button>
+          </div>
+        </div>
+      </a>
+
+      <a href="#" class="product-card" onclick="addCart(event,'UK Banking Setup Guide','£9.99')">
+        <div class="product-thumb" style="background:linear-gradient(135deg,#f0f8ff,#ddeeff);">🏦</div>
+        <div class="product-body">
+          <div class="badge badge-gold" style="margin-bottom:8px;">Relocation</div>
+          <div class="product-title">UK Banking Setup Guide</div>
+          <div class="product-desc">Open a UK bank account as a newcomer — Monzo, Starling and Barclays compared.</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">★★★★☆ (142) · 28 pages</div>
+          <div class="product-foot">
+            <span class="price">£9.99</span>
+            <button class="btn-add">+ Add</button>
+          </div>
+        </div>
+      </a>
+
+      <a href="#" class="product-card" onclick="addCart(event,'Job Search Toolkit','£17.99')">
+        <div class="product-thumb" style="background:linear-gradient(135deg,#f5fff0,#e0f7e0);">
+          🧳<span class="badge badge-navy abs-badge">Bundle</span>
+        </div>
+        <div class="product-body">
+          <div class="badge badge-gold" style="margin-bottom:8px;">Job Search</div>
+          <div class="product-title">Job Search Toolkit</div>
+          <div class="product-desc">LinkedIn optimisation, interview prep, salary negotiation — complete UK job guide.</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">★★★★★ (267) · 80 pages</div>
+          <div class="product-foot">
+            <div><span class="price-old">£24.99</span><span class="price">£17.99</span></div>
+            <button class="btn-add">+ Add</button>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── LEAD MAGNET ── -->
+<section class="section-sm lead-bg" id="lead">
+  <div class="wrap-sm">
+    <div class="lead-box">
+      <div class="lead-glow"></div>
+      <div style="font-size:44px;margin-bottom:14px;">🎁</div>
+      <h3>Free: London Arrival Checklist</h3>
+      <p>Our 47-point checklist used by 8,000+ arrivals — covering your first week, month and 3 months. Completely free.</p>
+      <form class="lead-form" onsubmit="submitLead(event)">
+        <input class="lead-input" type="email" placeholder="Your email address" required id="lead-email"/>
+        <button type="submit" class="btn btn-gold">Get Free Guide</button>
+      </form>
+      <p class="lead-small">No spam. Unsubscribe anytime. GDPR compliant.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── CONSULTATIONS ── -->
+<section class="section consult-bg" id="consultations">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:40px;">
+      <div class="eyebrow" style="justify-content:center;display:flex;">Expert Sessions</div>
+      <h2 class="section-title" style="text-align:center;">1-to-1 Consultations</h2>
+      <p class="section-sub" style="margin:0 auto;">Book a video session with a London relocation specialist — visa, housing, banking, education and more.</p>
+    </div>
+    <div class="consult-grid">
+
+      <div class="consult-card">
+        <div class="tier-name">Bronze</div>
+        <div class="tier-dur">30 minutes · Video call</div>
+        <div class="tier-price">£49</div>
+        <ul class="tier-feats">
+          <li><span class="check">✓</span> Introductory consultation</li>
+          <li><span class="check">✓</span> Q&amp;A session</li>
+          <li><span class="check">✓</span> Resource pack PDF</li>
+          <li><span class="check">✓</span> Email summary</li>
+        </ul>
+        <a href="#" class="consult-btn" onclick="bookConsult(event,'Bronze')">Book Bronze →</a>
+      </div>
+
+      <div class="consult-card featured">
+        <div class="popular-tag">Most Popular</div>
+        <div class="tier-name">Silver</div>
+        <div class="tier-dur">60 minutes · Video call</div>
+        <div class="tier-price">£89</div>
+        <ul class="tier-feats">
+          <li><span class="check">✓</span> Full consultation</li>
+          <li><span class="check">✓</span> Personal action plan</li>
+          <li><span class="check">✓</span> Follow-up email</li>
+          <li><span class="check">✓</span> Resource bundle</li>
+          <li><span class="check">✓</span> Priority booking</li>
+        </ul>
+        <a href="#" class="consult-btn" onclick="bookConsult(event,'Silver')">Book Silver →</a>
+      </div>
+
+      <div class="consult-card">
+        <div class="tier-name">Gold</div>
+        <div class="tier-dur">90 minutes · Video call</div>
+        <div class="tier-price">£129</div>
+        <ul class="tier-feats">
+          <li><span class="check">✓</span> Deep-dive session</li>
+          <li><span class="check">✓</span> Document review</li>
+          <li><span class="check">✓</span> 30-day email support</li>
+          <li><span class="check">✓</span> Premium resource pack</li>
+          <li><span class="check">✓</span> Session recording</li>
+        </ul>
+        <a href="#" class="consult-btn" onclick="bookConsult(event,'Gold')">Book Gold →</a>
+      </div>
+
+    </div>
+    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:20px;">
+      🔒 Secure payment via Stripe · Instant booking confirmation · Reschedule up to 24 hours before
+    </p>
+  </div>
+</section>
+
+<!-- ── TOOLS ── -->
+<section class="section tools-bg" id="tools">
+  <div class="wrap">
+    <div style="margin-bottom:36px;">
+      <div class="eyebrow">Free Tools</div>
+      <h2 class="section-title">Interactive London Calculators</h2>
+      <p class="section-sub">Plan your finances and commute before you arrive — completely free.</p>
+    </div>
+    <div class="tools-grid">
+      <div class="tool-card">
+        <div class="tool-icon">🏙️</div>
+        <div class="tool-name">Cost of Living Calculator</div>
+        <div class="tool-desc">Adjust rent, food, transport and utilities to get a personalised monthly and yearly cost estimate.</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">🚇</div>
+        <div class="tool-name">Commute Time Finder</div>
+        <div class="tool-desc">Pick your home and work zones to see estimated travel time, single fare and monthly TfL cost.</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">📊</div>
+        <div class="tool-name">Budget Planner</div>
+        <div class="tool-desc">Enter your take-home income and instantly see how much you can save each month in London.</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:28px;">
+      <a href="#" class="btn btn-gold" onclick="showToast('Tools launching soon! Sign up for early access.');return false;">
+        Try Free Tools →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ── -->
+<section class="section testi-bg">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:36px;">
+      <div class="eyebrow" style="text-align:center;">Testimonials</div>
+      <h2 class="section-title" style="text-align:center;">Trusted by Thousands of New Londoners</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text">"The Relocation Starter Guide saved me weeks of confusion. I had my bank account, NI number and NHS GP sorted in the first 10 days."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">🇮🇳</div>
+          <div>
+            <div class="testi-name">Priya Sharma</div>
+            <div class="testi-from">Mumbai → London</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text">"As a Skilled Worker visa holder the banking guide was invaluable. Opened my Monzo in the airport queue — it worked perfectly."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">🇳🇬</div>
+          <div>
+            <div class="testi-name">Adebayo Okonkwo</div>
+            <div class="testi-from">Lagos → London</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text">"Booked the Gold consultation before moving and it was worth every penny. My consultant helped with the accommodation search remotely."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">🇧🇩</div>
+          <div>
+            <div class="testi-name">Tanvir Ahmed</div>
+            <div class="testi-from">Dhaka → London</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text">"The photography spot map is genuinely stunning. Found locations I'd never seen on Instagram. Worth every penny for Bankside alone."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">🇵🇰</div>
+          <div>
+            <div class="testi-name">Fatima Malik</div>
+            <div class="testi-from">Karachi → London</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── BLOG ── -->
+<section class="section blog-bg" id="blog">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:36px;gap:16px;flex-wrap:wrap;">
+      <div>
+        <div class="eyebrow">London Lens Blog</div>
+        <h2 class="section-title">Guides for New Londoners</h2>
+        <p class="section-sub">Expert articles on housing, banking, transport and culture.</p>
+      </div>
+    </div>
+    <div class="blog-grid">
+      <a href="#" class="blog-card">
+        <div class="blog-thumb">🏘️</div>
+        <div class="blog-body">
+          <div class="blog-meta"><span class="badge badge-gold">Housing</span> &nbsp;6 min read</div>
+          <div class="blog-title">Best Areas to Live in London for New Arrivals</div>
+          <div class="blog-excerpt">Comparing East, South and North London across commute, cost and community feel.</div>
+        </div>
+      </a>
+      <a href="#" class="blog-card">
+        <div class="blog-thumb">💷</div>
+        <div class="blog-body">
+          <div class="blog-meta"><span class="badge badge-gold">Finance</span> &nbsp;8 min read</div>
+          <div class="blog-title">The Real Cost of Living in London (2024)</div>
+          <div class="blog-excerpt">Rent, food, transport, entertainment — a realistic monthly breakdown with actual numbers.</div>
+        </div>
+      </a>
+      <a href="#" class="blog-card">
+        <div class="blog-thumb">🏦</div>
+        <div class="blog-body">
+          <div class="blog-meta"><span class="badge badge-gold">Banking</span> &nbsp;5 min read</div>
+          <div class="blog-title">UK Bank Accounts for New Arrivals: The 2024 Guide</div>
+          <div class="blog-excerpt">Which account you can open without a UK credit history — we tested them all.</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── MEMBERSHIP ── -->
+<section class="section mem-bg" id="membership">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:40px;">
+      <div class="eyebrow" style="text-align:center;">Membership</div>
+      <h2 class="section-title" style="text-align:center;">Unlock More with a Plan</h2>
+      <p class="section-sub" style="margin:0 auto;">Exclusive content, maps, consultation discounts and community access.</p>
+    </div>
+    <div class="mem-grid">
+
+      <div class="mem-card">
+        <div class="mem-header">
+          <div class="mem-name">Free</div>
+          <div class="mem-price">£0<span class="mem-per"></span></div>
+        </div>
+        <ul class="mem-feats">
+          <li><span class="yes">✓</span> Blog &amp; free articles</li>
+          <li><span class="yes">✓</span> Free tools &amp; calculators</li>
+          <li><span class="yes">✓</span> London Arrival Checklist</li>
+          <li><span class="no">✕</span> Premium guides</li>
+          <li><span class="no">✕</span> Exclusive maps</li>
+          <li><span class="no">✕</span> Consultation discounts</li>
+        </ul>
+        <div class="mem-foot">
+          <a href="#lead" class="mem-btn">Get Started Free</a>
+        </div>
+      </div>
+
+      <div class="mem-card featured">
+        <div class="mem-pop">MOST POPULAR</div>
+        <div class="mem-header">
+          <div class="mem-name">Premium</div>
+          <div class="mem-price">£12<span class="mem-per">/month</span></div>
+        </div>
+        <ul class="mem-feats">
+          <li><span class="yes">✓</span> Everything in Free</li>
+          <li><span class="yes">✓</span> All premium guides</li>
+          <li><span class="yes">✓</span> Exclusive borough maps</li>
+          <li><span class="yes">✓</span> Early access to new releases</li>
+          <li><span class="yes">✓</span> Email community</li>
+          <li><span class="no">✕</span> Consultation discounts</li>
+        </ul>
+        <div class="mem-foot">
+          <a href="#" class="mem-btn" onclick="showToast('Premium launch coming soon — join the waitlist!');return false;">Start Premium →</a>
+        </div>
+      </div>
+
+      <div class="mem-card">
+        <div class="mem-header">
+          <div class="mem-name">VIP</div>
+          <div class="mem-price">£29<span class="mem-per">/month</span></div>
+        </div>
+        <ul class="mem-feats">
+          <li><span class="yes">✓</span> Everything in Premium</li>
+          <li><span class="yes">✓</span> 20% consultation discount</li>
+          <li><span class="yes">✓</span> Private community access</li>
+          <li><span class="yes">✓</span> Monthly live Q&amp;A</li>
+          <li><span class="yes">✓</span> Priority support</li>
+          <li><span class="yes">✓</span> Session recording access</li>
+        </ul>
+        <div class="mem-foot">
+          <a href="#" class="mem-btn" onclick="showToast('VIP launch coming soon — join the waitlist!');return false;">Go VIP →</a>
+        </div>
+      </div>
+
+    </div>
+    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:20px;">
+      💳 Powered by Stripe · UK VAT included · Cancel anytime
+    </p>
+  </div>
+</section>
+
+<!-- ── CTA BANNER ── -->
+<section class="cta-banner">
+  <div class="wrap-sm">
+    <div style="font-size:44px;margin-bottom:16px;">🏙️</div>
+    <h2>Ready to Make London <em>Home</em>?</h2>
+    <p>Join thousands of newcomers who've used London Lens to settle in faster, smarter and with less stress.</p>
+    <div class="cta-btns">
+      <a href="#products" class="btn btn-gold">Shop All Guides →</a>
+      <a href="#lead" class="btn btn-outline">Get Free Checklist</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo">🏙️ London Lens</div>
+      <p class="footer-tagline">Your trusted platform for relocating to London from Bangladesh, India, Pakistan, Nigeria and beyond.</p>
+    </div>
+    <div>
+      <div class="footer-head">Platform</div>
+      <a href="#products" class="footer-link">Products</a>
+      <a href="#consultations" class="footer-link">Consultations</a>
+      <a href="#tools" class="footer-link">Free Tools</a>
+      <a href="#membership" class="footer-link">Membership</a>
+      <a href="#blog" class="footer-link">Blog</a>
+    </div>
+    <div>
+      <div class="footer-head">Resources</div>
+      <a href="#" class="footer-link">London Guides</a>
+      <a href="#" class="footer-link">Banking Guide</a>
+      <a href="#" class="footer-link">Housing Tips</a>
+      <a href="#" class="footer-link">Visa Info</a>
+      <a href="#" class="footer-link">Job Search</a>
+    </div>
+    <div>
+      <div class="footer-head">Company</div>
+      <a href="#" class="footer-link">About</a>
+      <a href="#" class="footer-link">Contact</a>
+      <a href="#" class="footer-link">FAQ</a>
+      <a href="#" class="footer-link">Privacy Policy</a>
+      <a href="#" class="footer-link">Terms of Service</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2024 London Lens Ltd · Registered in England &amp; Wales</span>
+    <span>🔒 Stripe Secured &nbsp;·&nbsp; 🇬🇧 London, UK &nbsp;·&nbsp; GDPR Compliant</span>
+  </div>
+</footer>
+
+<!-- ── TOAST ── -->
+<div id="toast"></div>
+
+<script>
+  // ── TOAST ──
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.innerHTML = '<span style="color:var(--gold);font-size:16px;">✓</span> ' + msg;
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 3500);
+  }
+
+  // ── ADD TO CART ──
+  function addCart(e, name, price) {
+    e.preventDefault();
+    showToast('"' + name + '" added — checkout coming soon!');
+  }
+
+  // ── BOOK CONSULT ──
+  function bookConsult(e, tier) {
+    e.preventDefault();
+    showToast(tier + ' consultation — booking system launching soon!');
+  }
+
+  // ── LEAD FORM ──
+  function submitLead(e) {
+    e.preventDefault();
+    var email = document.getElementById('lead-email').value;
+    if (!email) return;
+    document.getElementById('lead-email').value = '';
+    showToast('🎉 Checklist on its way to ' + email);
+  }
+
+  // ── SCROLL FADE-IN ──
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.product-card, .consult-card, .testi-card, .tool-card, .blog-card, .mem-card, .cat-card').forEach(function(el) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity .5s ease, transform .5s ease, box-shadow .22s, border-color .2s';
+    observer.observe(el);
+  });
+
+  // ── SMOOTH NAV ACTIVE ──
+  var sections = document.querySelectorAll('section[id]');
+  var navLinks = document.querySelectorAll('.nav-a[href^="#"]');
+  window.addEventListener('scroll', function() {
+    var pos = window.scrollY + 100;
+    sections.forEach(function(s) {
+      if (pos >= s.offsetTop && pos < s.offsetTop + s.offsetHeight) {
+        navLinks.forEach(function(a) {
+          a.style.color = a.getAttribute('href') === '#' + s.id
+            ? 'var(--gold)' : '';
+        });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
