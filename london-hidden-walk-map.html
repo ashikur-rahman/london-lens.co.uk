@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hidden London Walk — London Lens</title>
+<meta name="description" content="An interactive 2.5-hour walking tour of London's most hidden and iconic secret spots."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<!-- Leaflet.js for the real interactive map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0d1b2a;--navy2:#152436;--gold:#c9a84c;--gold2:#e2c97e;
+  --cream:#f9f6f0;--cream2:#f0ebe0;--ink:#1a1f2e;--muted:#6b7280;
+  --border:#e2ddd5;--white:#fff;
+  --serif:'Playfair Display',Georgia,serif;--sans:'Outfit',system-ui,sans-serif;
+  --r:10px;--shadow:0 4px 24px rgba(13,27,42,.12);--shadow-lg:0 12px 40px rgba(13,27,42,.2);
+}
+html,body{height:100%;font-family:var(--sans);background:var(--cream);color:var(--ink);-webkit-font-smoothing:antialiased;}
+
+/* ── TOPBAR ── */
+.topbar{
+  background:var(--navy);height:56px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 20px;
+  border-bottom:1px solid rgba(201,168,76,.18);position:sticky;top:0;z-index:1000;
+}
+.tl{font-family:var(--serif);color:var(--gold);font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px;text-decoration:none;}
+.tl-icon{width:26px;height:26px;background:rgba(201,168,76,.18);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.btn-sm{
+  padding:7px 16px;border-radius:7px;font-family:var(--sans);font-size:13px;font-weight:600;
+  cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:all .2s;
+}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{background:var(--gold2);}
+.btn-outline{background:transparent;color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.2);}
+.btn-outline:hover{color:var(--gold);border-color:rgba(201,168,76,.5);}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:380px 1fr;height:calc(100vh - 56px);}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  overflow-y:auto;background:var(--white);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+}
+.sidebar::-webkit-scrollbar{width:4px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px;}
+
+.sidebar-hero{
+  background:linear-gradient(160deg,var(--navy) 0%,var(--navy2) 100%);
+  padding:24px 20px 20px;position:relative;overflow:hidden;
+}
+.sidebar-hero::before{
+  content:'';position:absolute;bottom:-60px;right:-60px;width:200px;height:200px;
+  border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.1) 0%,transparent 70%);
+}
+.walk-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.2);
+  color:var(--gold2);font-size:10.5px;font-weight:600;letter-spacing:1.5px;
+  text-transform:uppercase;padding:4px 12px;border-radius:12px;margin-bottom:12px;
+}
+.sidebar-hero h1{
+  font-family:var(--serif);color:var(--white);font-size:22px;font-weight:700;
+  line-height:1.25;margin-bottom:8px;position:relative;z-index:1;
+}
+.sidebar-hero h1 em{color:var(--gold);font-style:italic;}
+.hero-sub{color:rgba(255,255,255,.55);font-size:13px;line-height:1.6;margin-bottom:16px;position:relative;z-index:1;}
+.route-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;position:relative;z-index:1;}
+.route-stat{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;padding:8px 6px;text-align:center;
+}
+.route-stat-val{font-size:15px;font-weight:700;color:var(--gold);}
+.route-stat-lab{font-size:9.5px;color:rgba(255,255,255,.45);margin-top:2px;}
+
+/* ── PROGRESS BAR ── */
+.progress-wrap{padding:12px 20px;background:var(--cream2);border-bottom:1px solid var(--border);}
+.progress-label{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-bottom:5px;}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .4s ease;}
+
+/* ── STOP LIST ── */
+.stop-list{padding:12px 0;flex:1;}
+.stop-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 20px;cursor:pointer;
+  border-bottom:1px solid var(--border);
+  transition:background .2s;position:relative;
+}
+.stop-item:hover{background:var(--cream);}
+.stop-item.active{background:linear-gradient(90deg,rgba(201,168,76,.06),transparent);}
+.stop-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);}
+.stop-item.visited .stop-num{background:var(--gold)!important;color:var(--navy)!important;}
+.stop-num{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;
+  transition:all .3s;
+}
+.stop-meta{flex:1;min-width:0;}
+.stop-name{font-weight:600;font-size:14px;color:var(--navy);margin-bottom:2px;line-height:1.3;}
+.stop-area{font-size:11.5px;color:var(--muted);margin-bottom:5px;}
+.stop-pills{display:flex;gap:5px;flex-wrap:wrap;}
+.pill{
+  font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;
+  letter-spacing:.3px;
+}
+.pill-walk{background:#e0f2fe;color:#0369a1;}
+.pill-free{background:#dcfce7;color:#166534;}
+.pill-pay{background:#fef9c3;color:#854d0e;}
+.stop-emoji{font-size:20px;flex-shrink:0;width:28px;text-align:center;margin-top:1px;}
+.stop-check{
+  width:20px;height:20px;border-radius:50%;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  font-size:10px;color:transparent;transition:all .3s;cursor:pointer;margin-top:3px;
+}
+.stop-check.done{background:var(--gold);border-color:var(--gold);color:var(--navy);}
+
+/* ── STOP DETAIL PANEL ── */
+.detail-panel{
+  margin:0 12px 12px;background:var(--white);
+  border:1px solid var(--border);border-radius:12px;overflow:hidden;
+  display:none;
+}
+.detail-panel.open{display:block;animation:slideDown .25s ease;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.detail-header{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
+.detail-name{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--navy);}
+.detail-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;}
+.detail-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 16px;}
+.dtab{
+  padding:8px 14px;font-size:12px;font-weight:600;color:var(--muted);
+  border-bottom:2px solid transparent;cursor:pointer;transition:all .2s;
+  background:none;border-left:none;border-right:none;border-top:none;font-family:var(--sans);
+}
+.dtab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.detail-body{padding:14px 16px;}
+.tip-block{
+  background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);
+  border-radius:8px;padding:10px 12px;margin-bottom:10px;
+}
+.tip-label{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.tip-text{font-size:13px;color:var(--ink);line-height:1.6;}
+.info-row{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:1px solid var(--border);font-size:12.5px;}
+.info-icon{flex-shrink:0;width:20px;text-align:center;}
+.info-label{color:var(--muted);width:72px;flex-shrink:0;font-weight:500;}
+.info-val{color:var(--ink);}
+.do-list{list-style:none;margin-top:6px;}
+.do-list li{font-size:12.5px;color:var(--ink);padding:5px 0;border-top:1px solid var(--border);display:flex;gap:7px;}
+.do-list li::before{content:'✓';color:var(--gold);font-weight:700;flex-shrink:0;}
+.avoid-block{background:#fff5f5;border:1px solid #fecaca;border-radius:7px;padding:9px 12px;margin-top:8px;}
+.avoid-label{font-size:10px;font-weight:700;color:#dc2626;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.avoid-text{font-size:12.5px;color:var(--ink);}
+
+/* ── MAP ── */
+.map-wrap{position:relative;overflow:hidden;}
+#map{width:100%;height:100%;}
+
+/* LEAFLET CUSTOM MARKERS */
+.custom-marker{
+  width:36px;height:36px;border-radius:50%;border:3px solid white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:white;
+  box-shadow:0 3px 12px rgba(0,0,0,.35);cursor:pointer;
+  transition:transform .2s;font-family:var(--sans);
+}
+.custom-marker:hover{transform:scale(1.2);}
+.custom-marker.active-marker{transform:scale(1.25);box-shadow:0 4px 20px rgba(0,0,0,.5);}
+
+/* MAP OVERLAY CARDS */
+.map-overlay{
+  position:absolute;top:16px;right:16px;z-index:500;
+  background:var(--white);border-radius:12px;
+  border:1px solid var(--border);box-shadow:var(--shadow-lg);
+  width:240px;overflow:hidden;
+}
+.map-overlay-header{
+  background:var(--navy);padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.map-overlay-title{font-family:var(--serif);color:var(--gold);font-size:14px;font-weight:700;}
+.map-overlay-body{padding:10px 12px;}
+.legend-item{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;color:var(--ink);}
+.legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+
+.map-tip-toast{
+  position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+  z-index:500;background:var(--navy);color:var(--white);
+  padding:8px 18px;border-radius:20px;font-size:12.5px;font-weight:500;
+  border:1px solid rgba(201,168,76,.3);white-space:nowrap;
+  animation:fadeUp .4s ease;pointer-events:none;
+}
+@keyframes fadeUp{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* ── BOTTOM BAR (mobile) ── */
+.map-bottom-bar{
+  position:absolute;bottom:0;left:0;right:0;z-index:500;
+  background:var(--white);border-top:1px solid var(--border);
+  padding:12px 16px;display:none;
+}
+.mbb-name{font-family:var(--serif);font-size:15px;color:var(--navy);font-weight:700;margin-bottom:2px;}
+.mbb-sub{font-size:12px;color:var(--muted);}
+
+/* ── PDF BANNER ── */
+.pdf-banner{
+  margin:12px;background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
+  border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;
+  border:1px solid rgba(201,168,76,.2);
+}
+.pdf-icon{font-size:28px;flex-shrink:0;}
+.pdf-text{flex:1;}
+.pdf-title{font-family:var(--serif);color:var(--gold);font-size:14px;font-weight:700;margin-bottom:2px;}
+.pdf-sub{color:rgba(255,255,255,.5);font-size:11.5px;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .layout{grid-template-columns:1fr;grid-template-rows:auto 1fr;}
+  .sidebar{max-height:45vh;border-right:none;border-bottom:1px solid var(--border);}
+  .map-bottom-bar{display:block;}
+  .map-overlay{display:none;}
+  .topbar .btn-outline{display:none;}
+}
+@media(max-width:480px){
+  .sidebar{max-height:42vh;}
+  .route-stats{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a href="index.html" class="tl">
+    <div class="tl-icon">🏙</div>
+    London Lens
+  </a>
+  <div class="topbar-right">
+    <a href="london-hidden-walk-guide.pdf" download class="btn-sm btn-gold">⬇ Download PDF Guide</a>
+    <a href="index.html" class="btn-sm btn-outline">← Back to Site</a>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+
+    <!-- Hero -->
+    <div class="sidebar-hero">
+      <div class="walk-tag"><span style="width:5px;height:5px;border-radius:50%;background:var(--gold);display:inline-block;"></span> Free Walking Tour</div>
+      <h1>Hidden London<br><em>Walking Guide</em></h1>
+      <p class="hero-sub">8 secret stops most tourists never find. A 2.5-hour riverside walk from London Bridge to Holborn.</p>
+      <div class="route-stats">
+        <div class="route-stat"><div class="route-stat-val">8</div><div class="route-stat-lab">Stops</div></div>
+        <div class="route-stat"><div class="route-stat-val">3.8km</div><div class="route-stat-lab">Distance</div></div>
+        <div class="route-stat"><div class="route-stat-val">2.5h</div><div class="route-stat-lab">Duration</div></div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Your progress</span>
+        <span id="progress-text">0 of 8 stops visited</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- Stop list -->
+    <div class="stop-list" id="stop-list"></div>
+
+    <!-- PDF Banner -->
+    <div class="pdf-banner">
+      <div class="pdf-icon">📄</div>
+      <div class="pdf-text">
+        <div class="pdf-title">Offline PDF Guide</div>
+        <div class="pdf-sub">Print-ready · 3 pages · All 8 stops with insider tips</div>
+      </div>
+      <a href="london-hidden-walk-guide.pdf" download class="btn-sm btn-gold">⬇</a>
+    </div>
+
+  </div>
+
+  <!-- MAP -->
+  <div class="map-wrap" id="map-wrap">
+    <div id="map"></div>
+
+    <!-- Legend overlay -->
+    <div class="map-overlay">
+      <div class="map-overlay-header">
+        <div class="map-overlay-title">Route Legend</div>
+      </div>
+      <div class="map-overlay-body" id="legend-items"></div>
+    </div>
+
+    <!-- Bottom bar (mobile) -->
+    <div class="map-bottom-bar" id="map-bottom-bar">
+      <div class="mbb-name" id="mbb-name">Click a marker</div>
+      <div class="mbb-sub" id="mbb-sub">to see stop details</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── STOP DATA ───────────────────────────────────────────────────────────────
+const STOPS = [
+  {
+    num:1, emoji:"⛪", name:"Southwark Cathedral",
+    area:"London Bridge", lat:51.5054, lng:-0.0904,
+    color:"#3b82f6", walkFrom:"Start here", cost:"free",
+    tip:"Enter from the riverside door — the medieval nave is free and almost always empty. The tomb of Shakespeare's brother Edmund is inside.",
+    bestTime:"8–9am for golden light through the rose window",
+    do:["Light a candle in the Harvard Chapel","Find the replica Golden Hinde ship nearby","Check the Norman undercroft"],
+    avoid:"Lunchtime — tour groups arrive from Borough Market",
+    rating:"★★★★★",
+    photoCredit:"Norman nave dating from 1220 · Free entry",
+    desc:"London's oldest gothic cathedral — predating St Paul's by centuries and almost entirely overlooked by tourists who are rushing to the market next door.",
+    openHours:"Mon–Fri 8am–6pm, Sat–Sun 8:30am–5pm",
+    nearestTube:"London Bridge (2 min walk)",
+  },
+  {
+    num:2, emoji:"🕯️", name:"Crossbones Graveyard",
+    area:"Borough / Southwark", lat:51.5032, lng:-0.0964,
+    color:"#7c3aed", walkFrom:"5 min west", cost:"free",
+    tip:"An unconsecrated graveyard for the 'outcast dead' — medieval sex workers and paupers. The iron gates are covered in ribbons and mementos left by visitors. Profoundly moving.",
+    bestTime:"Any time — always open as a public memorial garden",
+    do:["Read the stories on the memorial boards","Add a ribbon or token to the gate","Visit 23rd of each month for candlelit vigil"],
+    avoid:"Nothing to avoid — a respectful, quiet space",
+    rating:"★★★★★",
+    photoCredit:"Redcross Way, Southwark · Free entry",
+    desc:"Over 15,000 paupers and outcast dead were buried here between the 11th and 19th centuries. The Museum of London has called it 'one of the most important archaeological sites in London'.",
+    openHours:"Always open",
+    nearestTube:"London Bridge (8 min walk)",
+  },
+  {
+    num:3, emoji:"🧀", name:"Borough Market Rooftop Lane",
+    area:"Borough", lat:51.5054, lng:-0.0910,
+    color:"#d97706", walkFrom:"4 min north", cost:"free",
+    tip:"Duck through Stoney Street and look up — Victorian wrought-iron railway arches frame a stunning rooftop skyline. The lane behind Monmouth Coffee is where chefs shop at 6am.",
+    bestTime:"Early morning (8–10am) or late evening after market closes",
+    do:["Get the legendary cheese toastie from Kappacasein","Try Neal's Yard Dairy aged cheddar","Photograph up through the railway arches"],
+    avoid:"Saturday noon — impossibly crowded, a 20-minute queue for everything",
+    rating:"★★★★★",
+    photoCredit:"Stoney Street SE1 · Free to enter",
+    desc:"London's oldest food market, with roots going back to the 13th century. The current Victorian iron structure is what makes it special — walk under the railway arches for the best photos.",
+    openHours:"Mon–Sat from 8am (varies by stall)",
+    nearestTube:"London Bridge (3 min walk)",
+  },
+  {
+    num:4, emoji:"⚓", name:"The Golden Hinde & Clink Street",
+    area:"Bankside", lat:51.5057, lng:-0.0920,
+    color:"#0891b2", walkFrom:"3 min east", cost:"£5",
+    tip:"A full-size replica of Drake's circumnavigation ship, docked in a hidden courtyard off Clink Street. Most people walk right past it. The cobbled street itself is medieval and extraordinary.",
+    bestTime:"Weekday mornings when school groups aren't visiting",
+    do:["Walk Clink Street's cobblestones — feel the medieval city","See the original Clink Prison Museum","Find the 'Mudlarking Beach' accessible at low tide"],
+    avoid:"High tide (no beach access)",
+    rating:"★★★★☆",
+    photoCredit:"Clink Street SE1 · Ship tour £5 · Street free",
+    desc:"Clink Street was London's most notorious district — the original 'clink' prison (from which the slang derives) stood here. The cobbled lane runs along a canyon of Victorian railway bridges.",
+    openHours:"Daily 10am–5:30pm (ship) · Street always open",
+    nearestTube:"London Bridge (6 min walk)",
+  },
+  {
+    num:5, emoji:"🏭", name:"Tate Modern Level 10 Viewpoint",
+    area:"Bankside", lat:51.5076, lng:-0.0994,
+    color:"#dc2626", walkFrom:"8 min west", cost:"free",
+    tip:"The Turbine Hall is free and always jaw-dropping. Take the lift to Level 10 for the best FREE view of St Paul's in all of London — utterly unknown to tourists who queue at paid viewpoints.",
+    bestTime:"Late afternoon on a weekday — golden hour hits the Thames beautifully",
+    do:["Take the lift to Level 10 viewing deck (completely free)","Walk across the Millennium Bridge for the iconic St Paul's view","Explore the free Boiler House permanent galleries"],
+    avoid:"Weekend afternoons in summer (very busy Turbine Hall)",
+    rating:"★★★★★",
+    photoCredit:"Bankside SE1 · FREE entry · Level 10 view",
+    desc:"The former Bankside Power Station, converted by Herzog & de Meuron in 2000. The Turbine Hall is one of the great public spaces in Europe — and most of the best art is permanently free.",
+    openHours:"Sun–Thu 10am–6pm, Fri–Sat 10am–10pm",
+    nearestTube:"Blackfriars or Southwark (5 min walk)",
+  },
+  {
+    num:6, emoji:"🌉", name:"Blackfriars Bridge Underbelly",
+    area:"Blackfriars", lat:51.5119, lng:-0.1042,
+    color:"#16a34a", walkFrom:"10 min west", cost:"free",
+    tip:"Walk under Blackfriars Bridge at low tide — the Victorian ironwork is extraordinary and you're completely alone. The old railway bridge columns still stand mid-Thames like sentinels.",
+    bestTime:"1–2 hours after high tide — check BBC tides for London",
+    do:["Look for Roman pottery in the mud (legal mudlarking)","Photograph the ironwork from river level","Watch Thames boat traffic from the foreshore"],
+    avoid:"High tide — the path floods completely. Always check tides.",
+    rating:"★★★★☆",
+    photoCredit:"Queen Victoria Street EC4 · Free",
+    desc:"The original Victorian railway bridge columns still stand in the Thames alongside the current road bridge. At low tide you can walk the foreshore — London's mudlarkers have found Roman artefacts here.",
+    openHours:"Low tide only — check tide tables at bbc.co.uk/weather",
+    nearestTube:"Blackfriars (2 min walk)",
+  },
+  {
+    num:7, emoji:"⚔️", name:"Temple Church",
+    area:"Temple / Inns of Court", lat:51.5120, lng:-0.1073,
+    color:"#7c3aed", walkFrom:"7 min north", cost:"free",
+    tip:"A 12th-century round church built by the Knights Templar, hidden inside the Inns of Court. Crusader knights lie in effigy on the floor. Most tourists never find it — it doesn't appear prominently on maps.",
+    bestTime:"Tue–Sun 10am–4pm (closed Monday). Quietest mid-morning.",
+    do:["See the original Templar effigies — worn smooth by 800 years","Wander peaceful Inner Temple Garden (free, open to public)","Find the ancient sundial in the courtyard"],
+    avoid:"Mondays (closed) and during legal term services when access is restricted",
+    rating:"★★★★★",
+    photoCredit:"Temple, EC4 · Free entry most days",
+    desc:"Built in 1185 by the Knights Templar, this is one of only four surviving round churches in England. The stone effigies of crusading knights are among the oldest in Britain — some date to 1185.",
+    openHours:"Tue–Sun 10am–4pm · Closed Mon",
+    nearestTube:"Temple (3 min walk)",
+  },
+  {
+    num:8, emoji:"🏛️", name:"Sir John Soane's Museum",
+    area:"Holborn", lat:51.5172, lng:-0.1177,
+    color:"#0369a1", walkFrom:"12 min north", cost:"free",
+    tip:"The architect's own house, left exactly as it was in 1837 — crammed with antiquities, Hogarth paintings in secret fold-out panels, a pharaoh's sarcophagus in the basement, and an Egyptian crypt. Free. Shockingly undervisited.",
+    bestTime:"Tuesday evening (open to 9pm) — first Tuesday of the month is candlelit",
+    do:["Ask staff to open the hidden Hogarth panel paintings","Descend to the sarcophagus room in the crypt","Sign up for the monthly candlelit evening tour"],
+    avoid:"Avoid first Tuesday evening if you hate queues — but it's spectacular",
+    rating:"★★★★★",
+    photoCredit:"13 Lincoln's Inn Fields WC2 · FREE",
+    desc:"John Soane (1753–1837) was one of Britain's greatest architects. He left his house to the nation on condition that nothing be changed. It hasn't been. Every inch is stuffed with antiquities, casts, paintings and architectural drawings.",
+    openHours:"Wed–Sun 10am–5pm, Tue 10am–9pm · Closed Mon",
+    nearestTube:"Holborn (5 min walk)",
+  },
+];
+
+// ── COLOUR MAPS ──────────────────────────────────────────────────────────────
+const catNames = ["","Cathedral","Graveyard","Market","Historic Ship","Gallery","Riverside","Church","Museum"];
+let visited = new Set();
+let activeStop = null;
+let markers = [];
+
+// ── INIT MAP ─────────────────────────────────────────────────────────────────
+const map = L.map('map', {
+  center:[51.508, -0.102],
+  zoom:14,
+  zoomControl:true,
+});
+
+// Attractive tile layer — CartoDB Voyager
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains:'abcd', maxZoom:19
+}).addTo(map);
+
+// ── DRAW ROUTE POLYLINE ───────────────────────────────────────────────────────
+const routePoints = STOPS.map(s => [s.lat, s.lng]);
+L.polyline(routePoints, {
+  color:'#0d1b2a',
+  weight:3,
+  opacity:.7,
+  dashArray:'8 5',
+}).addTo(map);
+
+// Subtle route glow
+L.polyline(routePoints, {
+  color:'#c9a84c',
+  weight:7,
+  opacity:.15,
+}).addTo(map);
+
+// ── DRAW MARKERS ──────────────────────────────────────────────────────────────
+STOPS.forEach(stop => {
+  const icon = L.divIcon({
+    className:'',
+    html:`<div class="custom-marker" id="cm-${stop.num}" style="background:${stop.color};">${stop.num}</div>`,
+    iconSize:[36,36],
+    iconAnchor:[18,18],
+    popupAnchor:[0,-20],
+  });
+
+  const marker = L.marker([stop.lat, stop.lng], {icon})
+    .addTo(map)
+    .bindPopup(buildPopup(stop), {
+      maxWidth:280,
+      className:'ll-popup',
+    });
+
+  marker.on('click', () => selectStop(stop));
+  markers.push({ stop, marker });
+});
+
+// Start & end labels
+L.marker([STOPS[0].lat, STOPS[0].lng], {
+  icon: L.divIcon({
+    className:'',
+    html:`<div style="background:#166534;color:white;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3);">▶ START</div>`,
+    iconAnchor:[20,30],
+  })
+}).addTo(map);
+
+L.marker([STOPS[STOPS.length-1].lat, STOPS[STOPS.length-1].lng], {
+  icon: L.divIcon({
+    className:'',
+    html:`<div style="background:#0369a1;color:white;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3);">🏁 END</div>`,
+    iconAnchor:[-4,30],
+  })
+}).addTo(map);
+
+// ── POPUP BUILDER ─────────────────────────────────────────────────────────────
+function buildPopup(s) {
+  return `
+    <div style="font-family:'Outfit',sans-serif;min-width:220px;">
+      <div style="background:${s.color};color:white;padding:10px 12px;margin:-10px -12px 10px;border-radius:6px 6px 0 0;">
+        <div style="font-size:20px;margin-bottom:4px;">${s.emoji}</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;">${s.name}</div>
+        <div style="font-size:11px;opacity:.8;">${s.area}</div>
+      </div>
+      <div style="font-size:12.5px;color:#374151;line-height:1.5;margin-bottom:10px;">${s.desc}</div>
+      <div style="display:flex;gap:6px;align-items:center;font-size:11.5px;color:#6b7280;margin-bottom:6px;">
+        <span>🕐</span><span>${s.openHours}</span>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;font-size:11.5px;color:#6b7280;margin-bottom:10px;">
+        <span>🚇</span><span>${s.nearestTube}</span>
+      </div>
+      <div style="background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:6px;padding:7px 9px;margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:700;color:#8a6820;letter-spacing:1px;margin-bottom:3px;">HIDDEN TIP</div>
+        <div style="font-size:12px;color:#1a1f2e;">${s.tip.substring(0,110)}…</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span style="background:#e0f2fe;color:#0369a1;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:10px;">🚶 ${s.walkFrom}</span>
+        <span style="background:${s.cost==='free'?'#dcfce7':'#fef9c3'};color:${s.cost==='free'?'#166534':'#854d0e'};font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:10px;">${s.cost==='free'?'Free entry':s.cost}</span>
+        <span style="color:#c9a84c;font-size:13px;">${s.rating}</span>
+      </div>
+    </div>
+  `;
+}
+
+// ── STOP SELECTION ────────────────────────────────────────────────────────────
+function selectStop(stop) {
+  activeStop = stop;
+  // Map fly
+  map.flyTo([stop.lat, stop.lng], 16, {animate:true,duration:.8});
+  // Update sidebar
+  document.querySelectorAll('.stop-item').forEach(el => el.classList.toggle('active', +el.dataset.num === stop.num));
+  // Update marker styles
+  document.querySelectorAll('.custom-marker').forEach(el => el.classList.remove('active-marker'));
+  const cm = document.getElementById(`cm-${stop.num}`);
+  if (cm) cm.classList.add('active-marker');
+  // Scroll sidebar to item
+  const item = document.querySelector(`.stop-item[data-num="${stop.num}"]`);
+  if (item) item.scrollIntoView({behavior:'smooth',block:'nearest'});
+  // Show detail panel
+  showDetail(stop);
+  // Mobile bottom bar
+  document.getElementById('mbb-name').textContent = `${stop.emoji}  ${stop.name}`;
+  document.getElementById('mbb-sub').textContent = stop.area + ' · ' + stop.walkFrom;
+  document.getElementById('map-bottom-bar').style.display = 'block';
+}
+
+// ── DETAIL PANEL ──────────────────────────────────────────────────────────────
+let activeTab = 'tip';
+function showDetail(stop) {
+  // Remove existing detail
+  document.querySelectorAll('.detail-panel').forEach(el => el.remove());
+  const item = document.querySelector(`.stop-item[data-num="${stop.num}"]`);
+  if (!item) return;
+  const panel = document.createElement('div');
+  panel.className = 'detail-panel open';
+  panel.innerHTML = buildDetail(stop, activeTab);
+  item.after(panel);
+  // Tab listeners
+  panel.querySelectorAll('.dtab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      activeTab = tab.dataset.tab;
+      panel.querySelector('.detail-body').innerHTML = detailBody(stop, activeTab);
+      panel.querySelectorAll('.dtab').forEach(t => t.classList.toggle('active', t.dataset.tab===activeTab));
+    });
+  });
+  panel.querySelector('.detail-close').addEventListener('click', () => {
+    panel.remove(); activeStop = null;
+    document.getElementById('map-bottom-bar').style.display = 'none';
+    document.querySelectorAll('.stop-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.custom-marker').forEach(el => el.classList.remove('active-marker'));
+  });
+}
+
+function buildDetail(stop, tab) {
+  return `
+    <div class="detail-header" style="border-bottom:1px solid var(--border);">
+      <div>
+        <div class="detail-name">${stop.emoji}  ${stop.name}</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${stop.area}</div>
+      </div>
+      <button class="detail-close">✕</button>
+    </div>
+    <div class="detail-tabs">
+      <button class="dtab ${tab==='tip'?'active':''}" data-tab="tip">Tip</button>
+      <button class="dtab ${tab==='do'?'active':''}" data-tab="do">Do This</button>
+      <button class="dtab ${tab==='info'?'active':''}" data-tab="info">Info</button>
+    </div>
+    <div class="detail-body">${detailBody(stop, tab)}</div>
+  `;
+}
+
+function detailBody(stop, tab) {
+  if (tab === 'tip') {
+    return `
+      <div class="tip-block">
+        <div class="tip-label">Hidden Tip</div>
+        <div class="tip-text">${stop.tip}</div>
+      </div>
+      <div class="info-row"><span class="info-icon">🕐</span><span class="info-label">Best time</span><span class="info-val">${stop.bestTime}</span></div>
+      <div class="info-row"><span class="info-icon">📷</span><span class="info-label">Photo</span><span class="info-val">${stop.photoCredit}</span></div>
+    `;
+  }
+  if (tab === 'do') {
+    const items = stop.do.map(d => `<li>${d}</li>`).join('');
+    return `
+      <ul class="do-list">${items}</ul>
+      <div class="avoid-block">
+        <div class="avoid-label">Avoid</div>
+        <div class="avoid-text">${stop.avoid}</div>
+      </div>
+    `;
+  }
+  // info
+  return `
+    <div class="info-row"><span class="info-icon">🚇</span><span class="info-label">Tube</span><span class="info-val">${stop.nearestTube}</span></div>
+    <div class="info-row"><span class="info-icon">🕐</span><span class="info-label">Hours</span><span class="info-val">${stop.openHours}</span></div>
+    <div class="info-row"><span class="info-icon">💷</span><span class="info-label">Cost</span><span class="info-val">${stop.cost === 'free' ? 'Free entry' : stop.cost}</span></div>
+    <div class="info-row"><span class="info-icon">🚶</span><span class="info-label">From prev</span><span class="info-val">${stop.walkFrom}</span></div>
+    <div class="info-row"><span class="info-icon">⭐</span><span class="info-label">Rating</span><span class="info-val">${stop.rating}</span></div>
+    <div class="info-row"><span class="info-icon">ℹ️</span><span class="info-label">About</span><span class="info-val">${stop.desc.substring(0,120)}…</span></div>
+  `;
+}
+
+// ── BUILD SIDEBAR STOPS ───────────────────────────────────────────────────────
+function buildSidebar() {
+  const list = document.getElementById('stop-list');
+  list.innerHTML = STOPS.map(s => `
+    <div class="stop-item" data-num="${s.num}" onclick="selectStop(STOPS[${s.num-1}])">
+      <div class="stop-num" style="background:${s.color}22;color:${s.color};">${s.num}</div>
+      <div class="stop-emoji">${s.emoji}</div>
+      <div class="stop-meta">
+        <div class="stop-name">${s.name}</div>
+        <div class="stop-area">${s.area}</div>
+        <div class="stop-pills">
+          <span class="pill pill-walk">🚶 ${s.walkFrom}</span>
+          <span class="pill ${s.cost==='free'?'pill-free':'pill-pay'}">${s.cost==='free'?'Free':s.cost}</span>
+        </div>
+      </div>
+      <div class="stop-check" id="chk-${s.num}" onclick="toggleVisited(event,${s.num})">✓</div>
+    </div>
+  `).join('');
+
+  // Legend
+  const legend = document.getElementById('legend-items');
+  legend.innerHTML = STOPS.map(s => `
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${s.color};"></div>
+      <span><strong>${s.num}.</strong> ${s.name}</span>
+    </div>
+  `).join('');
+}
+
+// ── VISITED TRACKING ──────────────────────────────────────────────────────────
+function toggleVisited(e, num) {
+  e.stopPropagation();
+  const chk = document.getElementById(`chk-${num}`);
+  const item = document.querySelector(`.stop-item[data-num="${num}"]`);
+  if (visited.has(num)) {
+    visited.delete(num);
+    chk.classList.remove('done');
+    item.classList.remove('visited');
+    // restore marker colour
+    const cm = document.getElementById(`cm-${num}`);
+    if (cm) cm.style.background = STOPS[num-1].color;
+  } else {
+    visited.add(num);
+    chk.classList.add('done');
+    item.classList.add('visited');
+    // grey out marker
+    const cm = document.getElementById(`cm-${num}`);
+    if (cm) {
+      cm.style.background = '#c9a84c';
+      cm.style.color = '#0d1b2a';
+    }
+    showToast(`Stop ${num} marked as visited! ✓`);
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const pct = (visited.size / STOPS.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${visited.size} of ${STOPS.length} stops visited`;
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const existing = document.querySelector('.map-tip-toast');
+  if (existing) existing.remove();
+  clearTimeout(toastTimer);
+  const t = document.createElement('div');
+  t.className = 'map-tip-toast';
+  t.textContent = msg;
+  document.getElementById('map-wrap').appendChild(t);
+  toastTimer = setTimeout(() => t.remove(), 3000);
+}
+
+// ── CUSTOM POPUP STYLE ────────────────────────────────────────────────────────
+const popStyle = document.createElement('style');
+popStyle.textContent = `
+  .ll-popup .leaflet-popup-content-wrapper {
+    border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.22);
+    padding:10px 12px;border:1px solid #e2ddd5;
+  }
+  .ll-popup .leaflet-popup-content { margin:0;font-size:13px; }
+  .ll-popup .leaflet-popup-tip-container { display:none; }
+  .leaflet-control-zoom { border:1px solid #e2ddd5 !important; box-shadow:0 2px 10px rgba(0,0,0,.1) !important; }
+  .leaflet-control-zoom a { color:#0d1b2a !important; font-weight:700 !important; }
+`;
+document.head.appendChild(popStyle);
+
+// ── KEYBOARD NAV ──────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (!activeStop) return;
+  const idx = STOPS.findIndex(s => s.num === activeStop.num);
+  if (e.key === 'ArrowRight' && idx < STOPS.length-1) selectStop(STOPS[idx+1]);
+  if (e.key === 'ArrowLeft'  && idx > 0)              selectStop(STOPS[idx-1]);
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+buildSidebar();
+
+// Auto-open first stop
+setTimeout(() => { selectStop(STOPS[0]); }, 800);
+
+// Show welcome toast
+setTimeout(() => showToast('Click any marker to explore — use ← → keys to navigate stops'), 1200);
+</script>
+</body>
+</html>
