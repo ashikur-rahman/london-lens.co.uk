@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>London Lens — Premium Maps · Members Only</title>
+<meta name="description" content="11 exclusive London walking maps for London Lens lifetime members."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0d1b2a;--navy2:#152436;--gold:#c9a84c;--gold2:#e2c97e;
+  --cream:#f9f6f0;--cream2:#f0ebe0;--ink:#1a1f2e;--muted:#6b7280;
+  --border:#e2ddd5;--white:#fff;--r:10px;
+  --shadow:0 4px 24px rgba(13,27,42,.12);--shadow-lg:0 12px 40px rgba(13,27,42,.2);
+  --map-color:#c9a84c;--map-accent:#e2c97e;
+  --serif:'Playfair Display',Georgia,serif;--sans:'Outfit',system-ui,sans-serif;
+}
+html,body{height:100%;font-family:var(--sans);background:var(--cream);color:var(--ink);-webkit-font-smoothing:antialiased;}
+
+/* ── MEMBER GATE ── */
+#gate{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,var(--navy) 0%,#1e3448 100%);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.gate-box{
+  background:var(--white);border-radius:20px;padding:40px;
+  max-width:460px;width:100%;text-align:center;
+  box-shadow:0 24px 80px rgba(0,0,0,.4);
+  animation:fadeUp .5s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.gate-logo{
+  font-family:var(--serif);color:var(--gold);font-size:26px;font-weight:700;
+  margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.gate-logo-icon{
+  width:40px;height:40px;background:rgba(201,168,76,.12);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.gate-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);
+  color:#8a6820;font-size:11px;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;padding:4px 14px;border-radius:12px;margin-bottom:18px;
+}
+.gate-h{font-family:var(--serif);font-size:22px;color:var(--navy);margin-bottom:8px;}
+.gate-p{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
+.gate-input{
+  width:100%;padding:13px 16px;border:2px solid var(--border);border-radius:10px;
+  font-family:var(--sans);font-size:15px;color:var(--ink);outline:none;
+  transition:border-color .2s;margin-bottom:10px;
+}
+.gate-input:focus{border-color:var(--gold);}
+.gate-btn{
+  width:100%;padding:14px;background:var(--navy);color:var(--gold);
+  border:none;border-radius:10px;font-family:var(--sans);
+  font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-bottom:10px;
+}
+.gate-btn:hover{background:#1e3448;transform:translateY(-1px);}
+.gate-btn-demo{
+  width:100%;padding:11px;background:var(--gold);color:var(--navy);
+  border:none;border-radius:10px;font-family:var(--sans);
+  font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;margin-bottom:16px;
+}
+.gate-btn-demo:hover{opacity:.88;}
+.gate-error{
+  color:#dc2626;font-size:13px;margin-bottom:10px;
+  padding:8px 12px;background:#fef2f2;border-radius:7px;border:1px solid #fecaca;
+  display:none;
+}
+.gate-products{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:16px;
+  border-top:1px solid var(--border);padding-top:16px;
+}
+.gate-prod-icon{font-size:18px;display:block;margin-bottom:2px;}
+.gate-prod-name{font-size:10px;color:var(--muted);}
+.gate-divider{
+  display:flex;align-items:center;gap:8px;margin:14px 0;
+  color:var(--muted);font-size:12px;
+}
+.gate-divider::before,.gate-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.member-note{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.5;}
+
+/* ── APP CHROME ── */
+.topbar{
+  background:var(--navy);height:56px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 16px;
+  border-bottom:1px solid rgba(201,168,76,.18);position:sticky;top:0;z-index:200;
+}
+.tl{font-family:var(--serif);color:var(--gold);font-size:18px;font-weight:700;
+    display:flex;align-items:center;gap:8px;text-decoration:none;cursor:pointer;}
+.tl-icon{width:26px;height:26px;background:rgba(201,168,76,.15);border-radius:6px;
+          display:flex;align-items:center;justify-content:center;font-size:13px;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.member-chip{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.2);
+  color:var(--gold);font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;
+}
+.btn-sm{
+  padding:7px 14px;border-radius:7px;font-family:var(--sans);font-size:13px;
+  font-weight:600;cursor:pointer;border:none;text-decoration:none;
+  display:inline-flex;align-items:center;gap:5px;transition:all .2s;
+}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15);}
+.btn-ghost:hover{color:var(--gold);border-color:rgba(201,168,76,.4);}
+
+/* ── MAP SELECTOR ── */
+.map-selector{
+  background:var(--navy2);border-bottom:1px solid rgba(255,255,255,.08);
+  overflow-x:auto;display:flex;gap:4px;padding:8px 12px;
+}
+.map-selector::-webkit-scrollbar{height:3px;}
+.map-selector::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px;}
+.map-tab{
+  flex-shrink:0;padding:7px 14px;border-radius:7px;border:1px solid rgba(255,255,255,.1);
+  font-family:var(--sans);font-size:12.5px;font-weight:500;cursor:pointer;
+  color:rgba(255,255,255,.55);background:transparent;white-space:nowrap;
+  transition:all .2s;display:flex;align-items:center;gap:5px;
+}
+.map-tab:hover{color:rgba(255,255,255,.85);border-color:rgba(255,255,255,.2);}
+.map-tab.active{background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700;}
+
+/* ── MAIN LAYOUT ── */
+.layout{display:grid;grid-template-columns:370px 1fr;height:calc(100vh - 56px - 51px);}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  overflow-y:auto;background:var(--white);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+}
+.sidebar::-webkit-scrollbar{width:4px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px;}
+
+.map-hero{
+  padding:20px 18px 16px;position:relative;overflow:hidden;
+}
+.map-hero-bg{
+  position:absolute;inset:0;
+  background:linear-gradient(160deg,var(--navy) 0%,var(--navy2) 100%);
+}
+.map-hero-glow{
+  position:absolute;bottom:-40px;right:-40px;width:160px;height:160px;
+  border-radius:50%;pointer-events:none;
+}
+.map-hero-content{position:relative;z-index:1;}
+.map-eyebrow{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--gold2);background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);
+  padding:3px 10px;border-radius:10px;margin-bottom:10px;
+}
+.map-title{
+  font-family:var(--serif);color:var(--white);font-size:20px;font-weight:700;
+  line-height:1.2;margin-bottom:5px;
+}
+.map-title em{color:var(--gold);font-style:italic;}
+.map-sub{color:rgba(255,255,255,.5);font-size:12px;margin-bottom:14px;line-height:1.5;}
+.map-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.map-stat{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:7px;padding:7px 5px;text-align:center;
+}
+.map-stat-v{font-size:14px;font-weight:700;color:var(--gold);}
+.map-stat-l{font-size:9px;color:rgba(255,255,255,.4);margin-top:1px;}
+
+/* Savings strip */
+.savings-strip{
+  display:flex;align-items:center;gap:0;
+  border-bottom:1px solid var(--border);
+}
+.saving-cell{
+  flex:1;padding:8px 12px;text-align:center;
+  border-right:1px solid var(--border);
+}
+.saving-cell:last-child{border-right:none;}
+.saving-val{font-size:14px;font-weight:700;}
+.saving-label{font-size:9.5px;color:var(--muted);margin-top:1px;}
+
+/* Progress */
+.progress-wrap{padding:10px 16px;background:var(--cream2);border-bottom:1px solid var(--border);}
+.progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:2px;transition:width .4s ease;}
+
+/* Stops */
+.stop-list{flex:1;overflow-y:auto;}
+.stop-item{
+  display:flex;align-items:flex-start;gap:10px;padding:11px 16px;
+  cursor:pointer;border-bottom:1px solid var(--border);transition:background .2s;
+  position:relative;
+}
+.stop-item:hover{background:var(--cream);}
+.stop-item.active{background:linear-gradient(90deg,rgba(201,168,76,.06),transparent);}
+.stop-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);}
+.stop-item.visited .stop-num{background:var(--gold)!important;color:var(--navy)!important;}
+.stop-num{
+  width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:10.5px;font-weight:700;flex-shrink:0;margin-top:1px;
+}
+.stop-meta{flex:1;min-width:0;}
+.stop-name{font-weight:600;font-size:13.5px;color:var(--navy);margin-bottom:2px;line-height:1.3;}
+.stop-area{font-size:11px;color:var(--muted);margin-bottom:5px;}
+.stop-pills{display:flex;gap:5px;flex-wrap:wrap;}
+.spill{font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:8px;}
+.spill-walk{background:#e0f2fe;color:#0369a1;}
+.spill-free{background:#dcfce7;color:#166534;}
+.spill-pay{background:#fef9c3;color:#854d0e;}
+.spill-save{background:rgba(201,168,76,.12);color:#8a6820;}
+.stop-emoji{font-size:19px;flex-shrink:0;width:24px;text-align:center;margin-top:1px;}
+.stop-check{
+  width:18px;height:18px;border-radius:50%;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  font-size:9px;color:transparent;transition:all .3s;cursor:pointer;margin-top:3px;
+}
+.stop-check.done{background:var(--gold);border-color:var(--gold);color:var(--navy);}
+
+/* Detail panel */
+.detail-panel{
+  margin:0 10px 10px;background:var(--white);
+  border:1px solid var(--border);border-radius:10px;overflow:hidden;display:none;
+}
+.detail-panel.open{display:block;animation:slideDown .25s ease;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.detail-header{padding:12px 14px;border-bottom:1px solid var(--border);
+               display:flex;justify-content:space-between;align-items:center;}
+.detail-name{font-family:var(--serif);font-size:14.5px;font-weight:700;color:var(--navy);}
+.detail-close{background:none;border:none;color:var(--muted);font-size:17px;cursor:pointer;}
+.detail-tabs{display:flex;border-bottom:1px solid var(--border);}
+.dtab{
+  padding:7px 13px;font-size:11.5px;font-weight:600;color:var(--muted);
+  border-bottom:2px solid transparent;cursor:pointer;transition:all .2s;
+  background:none;border-left:none;border-right:none;border-top:none;font-family:var(--sans);
+}
+.dtab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.detail-body{padding:12px 14px;}
+.tip-block{
+  background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);
+  border-radius:7px;padding:9px 11px;margin-bottom:9px;
+}
+.tip-lbl{font-size:9.5px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.tip-txt{font-size:12.5px;color:var(--ink);line-height:1.6;}
+.save-block{
+  border:1px solid rgba(201,168,76,.25);border-radius:7px;
+  padding:9px 11px;margin-bottom:9px;display:flex;gap:12px;
+}
+.save-item{flex:1;text-align:center;}
+.save-val{font-size:14px;font-weight:700;}
+.save-lbl{font-size:9.5px;color:var(--muted);margin-top:1px;}
+.transport-block{
+  background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;
+  padding:9px 11px;margin-bottom:9px;
+}
+.trans-lbl{font-size:9.5px;font-weight:700;color:#1d4ed8;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.trans-row{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink);margin-bottom:3px;}
+.irow{display:flex;gap:6px;align-items:flex-start;padding:5px 0;border-top:1px solid var(--border);font-size:12px;}
+.ilbl{color:var(--muted);width:60px;flex-shrink:0;font-weight:500;}
+.ival{color:var(--ink);flex:1;}
+.do-list{list-style:none;}
+.do-list li{font-size:12px;color:var(--ink);padding:4px 0;border-top:1px solid var(--border);
+            display:flex;gap:6px;}
+.do-list li::before{content:'✓';color:var(--gold);font-weight:700;flex-shrink:0;}
+.avoid-b{background:#fff5f5;border:1px solid #fecaca;border-radius:7px;padding:8px 11px;margin-top:7px;}
+.avoid-l{font-size:9.5px;font-weight:700;color:#dc2626;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+
+/* PDF strip */
+.pdf-strip{
+  padding:10px 14px;background:var(--navy);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.pdf-icon{font-size:22px;flex-shrink:0;}
+.pdf-text .pdf-title{font-family:var(--serif);color:var(--gold);font-size:12.5px;font-weight:700;}
+.pdf-text .pdf-sub{color:rgba(255,255,255,.4);font-size:10.5px;}
+.pdf-dl{
+  background:var(--gold);color:var(--navy);border:none;padding:7px 13px;
+  border-radius:7px;font-family:var(--sans);font-size:12px;font-weight:700;
+  cursor:pointer;white-space:nowrap;text-decoration:none;
+}
+
+/* MAP */
+.map-wrap{position:relative;overflow:hidden;}
+#map{width:100%;height:100%;}
+.custom-marker{
+  width:34px;height:34px;border-radius:50%;border:2.5px solid white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;color:white;
+  box-shadow:0 2px 10px rgba(0,0,0,.3);cursor:pointer;
+  transition:transform .2s;font-family:var(--sans);
+}
+.custom-marker:hover,.custom-marker.active-marker{transform:scale(1.2);}
+.custom-marker.visited-marker{filter:brightness(.7);}
+.map-legend{
+  position:absolute;top:14px;right:14px;z-index:500;
+  background:var(--white);border-radius:10px;border:1px solid var(--border);
+  box-shadow:var(--shadow-lg);width:210px;overflow:hidden;
+}
+.ml-header{background:var(--navy);padding:8px 12px;
+            font-family:var(--serif);color:var(--gold);font-size:13px;font-weight:700;}
+.ml-body{padding:8px 10px;max-height:220px;overflow-y:auto;}
+.ml-item{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px;color:var(--ink);}
+.ml-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.map-tip{
+  position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:500;
+  background:var(--navy);color:var(--white);
+  padding:7px 16px;border-radius:16px;font-size:12px;font-weight:500;
+  border:1px solid rgba(201,168,76,.3);white-space:nowrap;
+  animation:fadeUp .4s ease;pointer-events:none;
+}
+@keyframes fadeUp{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+.map-kbd{
+  position:absolute;bottom:50px;right:14px;z-index:500;
+  background:rgba(13,27,42,.7);color:rgba(255,255,255,.6);
+  padding:5px 10px;border-radius:6px;font-size:10.5px;
+  border:1px solid rgba(255,255,255,.1);
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr;grid-template-rows:50vh auto;}
+  .map-wrap{min-height:50vh;}
+  .map-legend{display:none;}
+  .map-kbd{display:none;}
+}
+@media(max-width:600px){.map-selector .map-tab{font-size:11.5px;padding:6px 10px;}}
+</style>
+</head>
+<body>
+
+<!-- ── MEMBER GATE ─────────────────────────────────────────────────────── -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-logo">
+      <div class="gate-logo-icon">🏙</div>
+      London Lens
+    </div>
+    <div style="height:1px;background:var(--border);margin:12px 0 16px;"></div>
+    <div class="gate-badge">🔒 Lifetime Members Only</div>
+    <h2 class="gate-h">Premium Map Access</h2>
+    <p class="gate-p">11 exclusive walking maps with insider tips, savings guides and offline PDFs. Available to London Lens lifetime subscribers only.</p>
+    <div class="gate-error" id="gate-error">Incorrect access code. Please check your welcome email.</div>
+    <input class="gate-input" type="password" id="gate-key" placeholder="Enter your member access code…" autocomplete="off"/>
+    <button class="gate-btn" onclick="checkKey()">Unlock My Maps →</button>
+    <div class="gate-divider">or try a free preview</div>
+    <button class="gate-btn-demo" onclick="demoAccess()">👀 Demo Access (Limited View)</button>
+    <div class="gate-products">
+      <div><span class="gate-prod-icon">🍺</span><div class="gate-prod-name">Pubs &amp; Bars</div></div>
+      <div><span class="gate-prod-icon">🏛️</span><div class="gate-prod-name">Museums</div></div>
+      <div><span class="gate-prod-icon">🏰</span><div class="gate-prod-name">Monuments</div></div>
+      <div><span class="gate-prod-icon">🌸</span><div class="gate-prod-name">Gardens</div></div>
+      <div><span class="gate-prod-icon">🎭</span><div class="gate-prod-name">Shakespeare</div></div>
+      <div><span class="gate-prod-icon">⚡</span><div class="gate-prod-name">Harry Potter</div></div>
+    </div>
+    <p class="member-note">Not a member? <a href="index.html#membership" style="color:var(--gold);">Upgrade to Lifetime →</a><br/>Members receive their access code by email within 24 hours of purchase.</p>
+  </div>
+</div>
+
+<!-- ── APP ───────────────────────────────────────────────────────────────── -->
+<div id="app" style="display:none;">
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="tl" onclick="location.href='index.html'">
+    <div class="tl-icon">🏙</div> London Lens
+  </div>
+  <div class="topbar-right">
+    <div class="member-chip" id="member-chip">⭐ Member</div>
+    <button class="btn-sm btn-ghost" id="logout-btn" onclick="logout()">Sign Out</button>
+    <a href="index.html" class="btn-sm btn-ghost">← Site</a>
+  </div>
+</div>
+
+<!-- Map Selector -->
+<div class="map-selector" id="map-selector"></div>
+
+<!-- Main Layout -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="map-hero" id="map-hero">
+      <div class="map-hero-bg"></div>
+      <div class="map-hero-glow" id="hero-glow"></div>
+      <div class="map-hero-content">
+        <div class="map-eyebrow" id="hero-eyebrow">🔒 Members Only</div>
+        <h1 class="map-title" id="hero-title">Loading…</h1>
+        <p class="map-sub" id="hero-sub"></p>
+        <div class="map-stats" id="hero-stats"></div>
+      </div>
+    </div>
+    <div class="savings-strip" id="savings-strip"></div>
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Your progress</span>
+        <span id="prog-text">0 stops visited</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="stop-list" id="stop-list"></div>
+    <div class="pdf-strip" id="pdf-strip">
+      <div class="pdf-icon">📄</div>
+      <div class="pdf-text">
+        <div class="pdf-title">Offline PDF Guide</div>
+        <div class="pdf-sub">Print-ready · Full stop cards · Members only</div>
+      </div>
+      <a class="pdf-dl" id="pdf-dl-btn" href="#" download>⬇ PDF</a>
+    </div>
+  </div>
+
+  <!-- Map -->
+  <div class="map-wrap" id="map-wrap">
+    <div id="map"></div>
+    <div class="map-legend" id="map-legend">
+      <div class="ml-header" id="legend-title">Route Stops</div>
+      <div class="ml-body" id="legend-body"></div>
+    </div>
+    <div class="map-kbd">← → Navigate stops</div>
+  </div>
+
+</div><!-- end layout -->
+</div><!-- end app -->
+
+<script>
+// ── DATA ───────────────────────────────────────────────────────────────────
+const ALL_STOPS = {"pubs": [{"num": 1, "name": "Ye Olde Cheshire Cheese", "area": "Fleet Street", "lat": 51.5136, "lng": -0.1062, "emoji": "\ud83c\udf7a", "color": "#b45309", "walkFrom": "Start here", "cost": "free entry", "tip": "Rebuilt in 1667 after the Great Fire. Dickens, Tennyson, Voltaire and Teddy Roosevelt all drank here. Order a real ale and find the tiny snugs downstairs \u2014 each one has its own fireplace.", "bestTime": "Weekday lunchtime \u2014 quiet, atmospheric", "do": ["Find the parrot that's been here since 1926", "Order the house porter ale", "Count the low beams \u2014 it's older than the USA"], "avoid": "Friday evenings \u2014 City workers pack it out", "savings": "Tour guides charge \u00a325pp for a pub walk \u2014 this costs \u00a30", "transport": "Chancery Lane tube (6 min walk)", "transport_cost": "Zone 1 \u2014 included in daily cap", "openHours": "Mon\u2013Sat 11am\u201311pm, Sun 12\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "The Cittie of Yorke", "area": "Holborn", "lat": 51.5178, "lng": -0.1125, "emoji": "\ud83c\udff0", "color": "#b45309", "walkFrom": "5 min walk", "cost": "free entry", "tip": "The longest pub bar in Britain \u2014 23 metres of solid mahogany. The huge triangular wine vats above the bar are original 17th century. Utterly theatrical and almost empty mid-week.", "bestTime": "Mid-week afternoon", "do": ["Sit in one of the private wooden cubicles", "Try the house bitter", "Look at the wine vats \u2014 they're 400 years old"], "avoid": "After 6pm when lawyers from Gray's Inn arrive", "savings": "Free to enter vs \u00a318 pub crawl tours", "transport": "Chancery Lane (3 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Sat 11:30am\u201311pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "The Seven Stars", "area": "Lincoln's Inn Fields", "lat": 51.5163, "lng": -0.1156, "emoji": "\u2b50", "color": "#b45309", "walkFrom": "8 min walk", "cost": "free entry", "tip": "Survived the Great Fire of 1667 \u2014 one of the few pubs in London that didn't burn. The landlady's cat has a barrister's wig. Impossibly small, utterly charming.", "bestTime": "Lunch on a weekday", "do": ["Meet the wig-wearing cat", "Order the scotch egg \u2014 legendary", "Try the daily hand-pulled guest ale"], "avoid": "Post-court rushes around 4\u20135pm", "savings": "Hidden gem \u2014 no entry fees ever", "transport": "Holborn (5 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Fri 11am\u201311pm, Sat\u2013Sun 12\u20138pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "The Lamb & Flag", "area": "Covent Garden", "lat": 51.5126, "lng": -0.1237, "emoji": "\ud83d\udc11", "color": "#b45309", "walkFrom": "12 min walk", "cost": "free entry", "tip": "The oldest pub in Covent Garden (1772). The poet Dryden was beaten up by hired thugs in the alley outside in 1679. Now the alley is the best drinking spot \u2014 look for the brass plaque.", "bestTime": "Early evening before theatre crowds", "do": ["Find Dryden's plaque in the alley", "Order the Oxford Blue ale", "Stand in the original timber frame snug"], "avoid": "Saturday evenings", "savings": "Free entry vs \u00a322 Covent Garden pub tour", "transport": "Covent Garden (3 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Thu 11am\u201311pm, Fri\u2013Sat 11am\u2013midnight, Sun 12\u201310:30pm", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 5, "name": "The Nag's Head", "area": "Belgravia", "lat": 51.4988, "lng": -0.1575, "emoji": "\ud83d\udc34", "color": "#b45309", "walkFrom": "20 min or tube", "cost": "free entry", "tip": "No music, no fruit machines, no mobile phones (enforced). London's last truly old-school pub. The landlord will confiscate your phone. No cash machines outside \u2014 bring cash.", "bestTime": "Sunday afternoon \u2014 quiet and perfect", "do": ["Experience a smartphone-free pub", "Try the Adnams Bitter on draught", "Admire the extraordinary collection of junk on the walls"], "avoid": "Trying to pay by card \u2014 cash only", "savings": "An experience money literally cannot buy elsewhere", "transport": "Knightsbridge (8 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Sat 11am\u201311pm, Sun 12\u201310:30pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 6, "name": "The Princess Louise", "area": "Holborn", "lat": 51.5175, "lng": -0.1189, "emoji": "\ud83d\udc51", "color": "#b45309", "walkFrom": "25 min or tube", "cost": "free entry", "tip": "The most spectacular Victorian pub interior in London. Etched glass, faience tiles, a gilded ceiling and separate private booths. Grade II listed \u2014 the interior is a protected national treasure.", "bestTime": "Midday on a weekday when light comes through the etched glass", "do": ["Count the different types of Victorian tile", "Get a private booth at the back", "Try the Sam Smith's ales \u2014 cheapest pints in central London (under \u00a33)"], "avoid": "After 5pm \u2014 packed with office workers", "savings": "Under \u00a33 pints in central London = save \u00a33-5 per drink vs nearby bars", "transport": "Holborn (3 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Sat 11am\u201311pm, Sun 12\u201310:30pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "museums": [{"num": 1, "name": "British Museum \u2014 Room 4 (Rosetta Stone)", "area": "Bloomsbury", "lat": 51.5194, "lng": -0.127, "emoji": "\ud83c\udffa", "color": "#0369a1", "walkFrom": "Start here", "cost": "Free", "tip": "Skip the main entrance queue \u2014 enter from the Montague Place back entrance. Room 4 for the Rosetta Stone is always packed; arrive at 10am opening or after 4pm. The Lewis Chessmen in Room 40 are always quiet.", "bestTime": "10am opening or after 4:30pm", "do": ["Room 40: Lewis Chessmen (almost always empty)", "Room 41: Sutton Hoo Helmet", "Ask for the free floor plan at information desk"], "avoid": "Weekday mornings in summer \u2014 school groups", "savings": "Equivalent museums in NYC/Paris charge \u00a320\u2013\u00a330 entry. Saving: \u00a325", "transport": "Holborn (5 min walk) or Tottenham Court Road (8 min)", "transport_cost": "Zone 1 \u2014 all included in daily cap \u00a38.10", "openHours": "Daily 10am\u20135pm (Fri to 8:30pm)", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "National Gallery \u2014 The Sunflowers Room", "area": "Trafalgar Square", "lat": 51.5089, "lng": -0.1283, "emoji": "\ud83c\udfa8", "color": "#0369a1", "walkFrom": "15 min or tube", "cost": "Free", "tip": "Room 43 has Van Gogh's Sunflowers \u2014 arrive early. But the real secret is Room 66: the tiny Rembrandt self-portraits room. Almost never crowded and infinitely more moving than the main galleries.", "bestTime": "Friday late opening (open to 9pm) \u2014 romantic and quiet", "do": ["Room 66: Rembrandt self-portraits (secret gem)", "Room 34: Turner's Fighting Temeraire", "Free guided tours daily at 11:30am and 2:30pm"], "avoid": "Weekend afternoons in summer", "savings": "\u00a325 equivalent at Mus\u00e9e d'Orsay. Saving: \u00a325", "transport": "Charing Cross (3 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 10am\u20136pm (Fri to 9pm)", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "Natural History Museum \u2014 Spirit Collection", "area": "South Kensington", "lat": 51.4966, "lng": -0.1764, "emoji": "\ud83e\udd95", "color": "#0369a1", "walkFrom": "20 min or tube", "cost": "Free", "tip": "The famous diplodocus hall (Hintze Hall) is stunning but rammed. Walk straight through to the Darwin Centre \u2014 the 22-metre glass Cocoon building houses 17 million preserved specimens. Eerily beautiful and almost always quiet.", "bestTime": "Tuesday\u2013Thursday mornings", "do": ["Darwin Centre Cocoon \u2014 17 million specimens behind glass", "Vault Gallery \u2014 the Hope Diamond of London museums", "Book a free scientist talk at the info desk"], "avoid": "School holidays \u2014 dippy the diplodocus gets mobbed", "savings": "Comparable to NYC Museum of Natural History: \u00a328. Saving: \u00a328", "transport": "South Kensington (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 10am\u20135:50pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "Victoria & Albert Museum \u2014 Cast Courts", "area": "South Kensington", "lat": 51.4966, "lng": -0.1722, "emoji": "\ud83d\udc57", "color": "#0369a1", "walkFrom": "8 min walk from NHM", "cost": "Free", "tip": "The main V&A galleries are extraordinary but the Cast Courts (Rooms 46a & 46b) are sensational and virtually unknown. Full-size plaster casts of Michelangelo's David and Trajan's Column \u2014 the only way to see them side by side.", "bestTime": "Midday on a weekday", "do": ["Cast Courts: David AND Trajan's Column for free", "Room 41: the medieval treasury", "The Garden Caf\u00e9 courtyard for a rest"], "avoid": "The gift shop", "savings": "\u00a320 entry equivalent at comparable European museums. Saving: \u00a320", "transport": "South Kensington (8 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 10am\u20135:45pm (Fri to 10pm)", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 5, "name": "Tate Modern \u2014 Turbine Hall + Level 10", "area": "Bankside", "lat": 51.5076, "lng": -0.0994, "emoji": "\ud83c\udfad", "color": "#0369a1", "walkFrom": "25 min or tube", "cost": "Free", "tip": "Level 10 is the best FREE view of St Paul's in London. Take the Blavatnik Building lift \u2014 most visitors don't know it exists. The permanent Turbine Hall commission is always staggering and always free.", "bestTime": "Late afternoon for the St Paul's golden hour view", "do": ["Level 10 viewing platform \u2014 free and extraordinary", "Current Turbine Hall commission (always spectacular)", "Walk the Millennium Bridge for the classic view"], "avoid": "Weekend afternoons", "savings": "The View from The Shard charges \u00a333. Saving: \u00a333", "transport": "Blackfriars (5 min walk)", "transport_cost": "Zone 1", "openHours": "Sun\u2013Thu 10am\u20136pm, Fri\u2013Sat 10am\u201310pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "monuments": [{"num": 1, "name": "Tower of London \u2014 Free Outer Walk", "area": "Tower Hill", "lat": 51.5081, "lng": -0.0759, "emoji": "\ud83d\udc51", "color": "#1e3a5f", "walkFrom": "Start here", "cost": "Free outer / \u00a330 inside", "tip": "The interior is magnificent but \u00a330 per person. The free outer walk along Tower Hill gives stunning views of all the external towers. At 9:30am the Ceremony of the Keys rehearsal is sometimes visible from outside for free.", "bestTime": "Early morning before crowds or golden hour", "do": ["Free photo spots from Tower Hill", "Afternoon: Ceremony of the Keys booking (free \u2014 book at HM Tower)", "Walk down to the river beach at low tide"], "avoid": "Paying \u00a330 without pre-booking \u2014 always book online (saves \u00a34)", "savings": "Book online saves \u00a34pp. Outer walk is completely free. Total saving: \u00a334", "transport": "Tower Hill (2 min walk)", "transport_cost": "Zone 1", "openHours": "Tue\u2013Sat 9am\u20135:30pm, Sun\u2013Mon 10am\u20135:30pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "St Paul's Cathedral \u2014 Free Churchyard", "area": "City of London", "lat": 51.5138, "lng": -0.0983, "emoji": "\u26ea", "color": "#1e3a5f", "walkFrom": "15 min walk", "cost": "Free outside / \u00a321 inside", "tip": "The Whispering Gallery is the paid highlight (\u00a321). But the Cathedral churchyard is free and gives the best exterior views. At 5pm daily, evensong is completely free and genuinely extraordinary \u2014 you sit in the quire for free.", "bestTime": "5pm for free evensong \u2014 one of London's great experiences", "do": ["5pm Evensong \u2014 free entry, quire seats, full choir", "Churchyard photo at golden hour", "Walk down to Millennium Bridge for the classic Tate view"], "avoid": "Paying \u00a321 before checking the free evensong option", "savings": "Free evensong vs \u00a321 entry. Daily saving: \u00a321pp", "transport": "St Paul's (2 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Sat 8:30am\u20134:30pm \u00b7 Evensong daily 5pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "Buckingham Palace \u2014 Free Changing of Guard", "area": "St James's", "lat": 51.5014, "lng": -0.1419, "emoji": "\ud83d\udc51", "color": "#1e3a5f", "walkFrom": "25 min or tube", "cost": "Free", "tip": "The Changing of the Guard is free but the crowds make it miserable if you arrive late. Arrive at 10:30am and stand on the Victoria Memorial \u2014 you're above the crowd and see everything. Alternatively watch from the Mall where you can see the full procession for 200 metres.", "bestTime": "10:30am \u2014 30 mins before the ceremony", "do": ["Stand on Victoria Memorial for elevated free view", "Watch the procession down the Mall", "Check royal.gov.uk for ceremony schedule \u2014 not daily"], "avoid": "Standing at the palace gates \u2014 worst view, most people", "savings": "Some 'tours' charge \u00a315 to 'guide' you to free events. Pure saving: \u00a315", "transport": "Victoria (8 min walk) or St James's Park (5 min walk)", "transport_cost": "Zone 1", "openHours": "Check royal.gov.uk \u2014 usually 11am Mon/Wed/Fri/Sun", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 4, "name": "The Monument \u2014 City of London", "area": "Monument", "lat": 51.5101, "lng": -0.0862, "emoji": "\ud83d\udd25", "color": "#1e3a5f", "walkFrom": "20 min from Buckingham Palace", "cost": "\u00a36 adults", "tip": "London's most overlooked viewpoint \u2014 202 feet tall, designed by Wren after the 1666 Great Fire. The column is exactly 202 feet from the spot where the fire started. Climb 311 steps for a stunning low-level city view with no glass barriers. You get a certificate at the top.", "bestTime": "Mid-morning weekday \u2014 rarely busy", "do": ["Climb all 311 steps for the certificate", "Photograph the City skyline with no glass", "Find the Latin inscription blaming Catholics for the Fire (later removed)"], "avoid": "Arriving just before 5pm closing", "savings": "Sky Garden charges \u00a30 but requires booking. The Monument's \u00a36 buys an authentic experience and certificate", "transport": "Monument (1 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 9:30am\u20136pm (last entry 5:30pm)", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 5, "name": "Sky Garden \u2014 Free 360\u00b0 View", "area": "Fenchurch Street", "lat": 51.5115, "lng": -0.0836, "emoji": "\ud83c\udf3f", "color": "#1e3a5f", "walkFrom": "5 min from Monument", "cost": "Free (pre-book)", "tip": "The best FREE view in London. 35 floors up, 360\u00b0 glass-enclosed garden with tropical plants. Completely free \u2014 you just need to book online in advance at skygarden.london. The viewing platforms on floors 35, 36 and 37 are extraordinary.", "bestTime": "Sunset (book the latest slot) for golden hour views", "do": ["Book free tickets at skygarden.london (essential)", "Floor 36 viewing platform \u2014 most dramatic", "Early morning slots are quietest"], "avoid": "Trying to walk in without a booking \u2014 impossible", "savings": "The Shard charges \u00a333 for a worse view. Saving: \u00a333 per person", "transport": "Monument (3 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Fri 10am\u20136pm, Sat\u2013Sun 9am\u20139pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "forts": [{"num": 1, "name": "Roman London Wall \u2014 Barbican", "area": "Barbican/City", "lat": 51.5196, "lng": -0.0963, "emoji": "\ud83c\udfdb\ufe0f", "color": "#374151", "walkFrom": "Start here", "cost": "Free", "tip": "The best-preserved section of the original Roman London Wall (AD 200) stands in a garden next to the Barbican. 15 metres tall in places. Most people walk past without noticing it's 1,800 years old.", "bestTime": "Any time \u2014 always accessible", "do": ["Walk the full remaining section (follow yellow Roman Wall signs)", "Find the medieval tower built on top of the Roman base", "Touch the original Roman concrete \u2014 it's harder than modern cement"], "avoid": "Nothing \u2014 always open and peaceful", "savings": "History tours charge \u00a320pp. This is free and better. Saving: \u00a320", "transport": "Barbican (3 min walk) or St Paul's (7 min walk)", "transport_cost": "Zone 1", "openHours": "Always open", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "Tower of London Outer Defences", "area": "Tower Hill", "lat": 51.5081, "lng": -0.0759, "emoji": "\ud83d\uddfc", "color": "#374151", "walkFrom": "15 min walk", "cost": "Free outer", "tip": "Walk the outer walls of the Tower for free \u2014 the full moat perimeter (now a garden) and all external towers are accessible without a ticket. The outer ward gives you the best views of the medieval military architecture.", "bestTime": "Early morning before the paid crowds", "do": ["Walk the full moat perimeter (now a garden)", "Find the Traitors' Gate from the river path", "Read the execution accounts on the information boards \u2014 free"], "avoid": "Paying \u00a330 without researching what's free outside first", "savings": "The free outer walk gives 40% of the experience. Saving: \u00a330", "transport": "Tower Hill (2 min walk)", "transport_cost": "Zone 1", "openHours": "Always open (outer)", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 3, "name": "Churchill War Rooms", "area": "Westminster", "lat": 51.5021, "lng": -0.1286, "emoji": "\ud83c\udf96\ufe0f", "color": "#374151", "walkFrom": "20 min or tube", "cost": "\u00a326 (IWM)", "tip": "The actual underground bunker from which Churchill directed WWII, preserved exactly as it was on 15 August 1945. The Map Room still has the last pins in the exact positions from VE Day. Book online for \u00a32 discount.", "bestTime": "Tue\u2013Thu mornings \u2014 quietest", "do": ["Stand in Churchill's actual study where he broadcast", "The Map Room \u2014 last positions from 1945 still in place", "Churchill Museum attached \u2014 included in ticket"], "avoid": "Weekends \u2014 book Tuesday or Wednesday for half the crowds", "savings": "Book online saves \u00a32. Audio guide included. Saving vs tour: \u00a315", "transport": "Westminster (5 min walk) or St James's Park (5 min)", "transport_cost": "Zone 1", "openHours": "Daily 9:30am\u20136pm (last entry 5pm)", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "London Mithraeum \u2014 Roman Temple", "area": "City of London", "lat": 51.512, "lng": -0.0894, "emoji": "\u2694\ufe0f", "color": "#374151", "walkFrom": "20 min walk", "cost": "Free (timed entry)", "tip": "A fully excavated Roman temple to the god Mithras (AD 240), found when clearing bomb damage in 1954. Now preserved in the basement of Bloomberg HQ. Free timed entry \u2014 book online. Sound and light installation is astonishing.", "bestTime": "Any day \u2014 book a morning slot", "do": ["Book free timed entry at londonmithraeum.com", "The sound and light experience recreating Roman ritual", "See real Roman artefacts found on site"], "avoid": "Forgetting to book \u2014 they turn you away without a slot", "savings": "Completely free. Comparable experience in Rome costs \u20ac12. Saving: \u00a310", "transport": "Mansion House (3 min walk)", "transport_cost": "Zone 1", "openHours": "Tue\u2013Sun 10am\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "ww_memorials": [{"num": 1, "name": "Churchill War Rooms", "area": "Westminster", "lat": 51.5021, "lng": -0.1286, "emoji": "\ud83c\udf96\ufe0f", "color": "#1f2937", "walkFrom": "Start here", "cost": "\u00a326 IWM", "tip": "The original underground bunker, untouched since August 1945. The last pin placed in the Map Room is still exactly where Churchill's chief of staff left it. Walk Churchill's personal route from his sleeping quarters to the Map Room.", "bestTime": "Tuesday\u2013Thursday to avoid weekend crowds", "do": ["Churchill's bedroom \u2014 see his actual dispatch box", "The Map Room (1945 unchanged)", "Listen to his actual radio broadcast in the original room"], "avoid": "Weekends", "savings": "Book online saves \u00a32 + audio guide included. vs \u00a340 WWII tour: saving \u00a316", "transport": "Westminster (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 9:30am\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "St Clement Danes \u2014 RAF Church", "area": "Strand", "lat": 51.5137, "lng": -0.1135, "emoji": "\u2708\ufe0f", "color": "#1f2937", "walkFrom": "12 min walk", "cost": "Free", "tip": "The official church of the RAF. The floor is inlaid with the badges of every RAF squadron. During the Blitz it was gutted completely \u2014 the rebuilt interior contains the original bells, recovered from the rubble. Ring the bells if you're there at the hour.", "bestTime": "11am when the bells ring", "do": ["See the squadron badges in the floor", "Find the Polish Air Force memorial \u2014 often overlooked", "Attend the free Sunday service \u2014 moving and historic"], "avoid": "Nothing \u2014 always peaceful and free", "savings": "Free entry. WWII walking tours charge \u00a318. Saving: \u00a318", "transport": "Temple (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 9am\u20134pm", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 3, "name": "Imperial War Museum", "area": "Lambeth", "lat": 51.4979, "lng": -0.1091, "emoji": "\ud83c\udfdb\ufe0f", "color": "#1f2937", "walkFrom": "25 min or tube", "cost": "Free", "tip": "The Holocaust Galleries (permanent, free) are among the most powerful museum experiences in the world. The giant naval guns outside were fired in both World Wars. The WWII gallery on Level 1 covers the Blitz with photographs, objects and survivor testimony.", "bestTime": "Weekday morning for the Holocaust Galleries when quieter", "do": ["Holocaust Galleries \u2014 free and essential", "WWII Blitz section \u2014 London photographs", "The original Enigma machine \u2014 free to see"], "avoid": "Going without comfortable shoes \u2014 it's a big building", "savings": "Comparable museums in DC charge $20+. Free here. Saving: \u00a318", "transport": "Lambeth North (8 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 10am\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "St Dunstan in the East \u2014 Bombed Church Garden", "area": "City of London", "lat": 51.5099, "lng": -0.0832, "emoji": "\ud83c\udf3f", "color": "#1f2937", "walkFrom": "25 min or tube", "cost": "Free", "tip": "A medieval church bombed in the Blitz, the ruins left standing and converted into a public garden. The walls are draped in ivy, the Gothic windows frame the sky. London's most hauntingly beautiful space \u2014 and almost no tourists know it exists.", "bestTime": "Spring for the wisteria \u00b7 Golden hour", "do": ["Sit in the ruined nave for 20 minutes", "Photograph through the Gothic window arches", "Find the Wren tower \u2014 survived 1666 Fire AND the Blitz"], "avoid": "Nothing \u2014 always peaceful", "savings": "A free, unique London experience. Similar 'ruin garden' in Rome costs \u20ac8. Saving: \u00a38", "transport": "Monument (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily dawn to dusk", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 5, "name": "The Cenotaph & Horse Guards Parade", "area": "Whitehall", "lat": 51.504, "lng": -0.1279, "emoji": "\ud83d\udd4a\ufe0f", "color": "#1f2937", "walkFrom": "20 min from IWM", "cost": "Free", "tip": "The national memorial to the war dead, designed by Lutyens in 1920. The inscription 'The Glorious Dead' was Kipling's suggestion. On normal days you can walk up and read the names. Horse Guards Parade behind it was used as a prisoner of war cage in WWII.", "bestTime": "Early morning when no tourists about \u2014 deeply moving", "do": ["Read the full Cenotaph inscription", "Walk through to Horse Guards Parade", "Cabinet War Rooms are 3 min away for context"], "avoid": "Remembrance Sunday (11 Nov) unless you specifically want the ceremony", "savings": "Free. Guided Whitehall tours charge \u00a315. Saving: \u00a315", "transport": "Westminster (5 min walk)", "transport_cost": "Zone 1", "openHours": "Always accessible", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "gardens": [{"num": 1, "name": "Postman's Park \u2014 Watts Memorial", "area": "City of London", "lat": 51.5163, "lng": -0.0982, "emoji": "\ud83c\udf37", "color": "#166534", "walkFrom": "Start here", "cost": "Free", "tip": "A hidden garden containing the Watts Memorial to Heroic Self-Sacrifice \u2014 a Victorian wall of ceramic tiles, each commemorating an ordinary person who died saving someone else. Featured in the film Closer. Profoundly moving and completely unknown.", "bestTime": "Lunchtime on a weekday when City workers briefly appear", "do": ["Read every tile on the Watts Memorial", "Find the tile for the oldest commemorated hero", "The garden has benches \u2014 bring a picnic"], "avoid": "Nothing \u2014 always peaceful", "savings": "Free. Garden 'experience' tours charge \u00a312. Saving: \u00a312", "transport": "St Paul's (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 8am\u2013dusk", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "Chelsea Physic Garden", "area": "Chelsea", "lat": 51.4841, "lng": -0.1677, "emoji": "\ud83c\udf3f", "color": "#166534", "walkFrom": "30 min or tube", "cost": "\u00a314 adults", "tip": "Founded in 1673 \u2014 older than Kew. The walled garden that supplied plant specimens to Hans Sloane (who founded the British Museum). The first cotton seeds sent to Georgia, USA, came from this garden. Extraordinary history in a tiny secret space.", "bestTime": "Spring for herb garden \u00b7 Summer for the pond", "do": ["Find the North American Order Bed \u2014 cotton history", "The pharmaceutical garden section", "Ask a gardener \u2014 they're extraordinarily knowledgeable"], "avoid": "Winter \u2014 garden less impressive", "savings": "Free with Art Fund card (\u00a367/year saves hundreds). On its own: \u00a314 is worth it", "transport": "Sloane Square (10 min walk)", "transport_cost": "Zone 1", "openHours": "Feb\u2013Oct, Tue\u2013Fri & Sun 11am\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "Kyoto Garden \u2014 Holland Park", "area": "Holland Park", "lat": 51.5021, "lng": -0.1965, "emoji": "\ud83c\udf8b", "color": "#166534", "walkFrom": "25 min or tube", "cost": "Free", "tip": "A gift from the city of Kyoto in 1991. Waterfalls, koi carp, peacocks wandering freely, a stone lantern. Hidden in the middle of Holland Park. The peacocks routinely perch on the gate posts and look magnificent.", "bestTime": "Spring for cherry blossom \u00b7 Early morning for peacocks", "do": ["Watch the peacocks display at 9\u201310am", "The waterfall from above and below", "Find the stone lantern donated by Kyoto City"], "avoid": "Rainy days (though atmospheric)", "savings": "Comparable Japanese gardens in Europe charge \u20ac8\u201315. Free here. Saving: \u00a312", "transport": "Holland Park (8 min walk)", "transport_cost": "Zone 2", "openHours": "Daily 7:30am\u201330 min before dusk", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "The Roof Garden \u2014 Kensington", "area": "Kensington", "lat": 51.4989, "lng": -0.1933, "emoji": "\ud83c\udf39", "color": "#166534", "walkFrom": "15 min from Holland Park", "cost": "Free when open", "tip": "1.5 acres of garden on the 6th floor of a former Derry & Toms department store. Flamingos, Tudor garden, Spanish garden \u2014 30 metres above Kensington High Street. Access is free when not used for private events \u2014 check the website.", "bestTime": "Weekday mornings when fewer events scheduled", "do": ["Feed the flamingos if accessible", "The Tudor garden section \u2014 extraordinary", "Views over Kensington and London"], "avoid": "Not checking if it's open before visiting \u2014 private events block access", "savings": "Rooftop bars nearby charge \u00a320+ for entry. Free here when open. Saving: \u00a320", "transport": "High Street Kensington (3 min walk)", "transport_cost": "Zone 2", "openHours": "Mon\u2013Fri when not private events \u2014 check virginlimitededition.com", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 5, "name": "St Dunstan in the East Garden", "area": "City of London", "lat": 51.5099, "lng": -0.0832, "emoji": "\u26ea", "color": "#166534", "walkFrom": "30 min or tube", "cost": "Free", "tip": "A Wren church tower with Blitz-bombed ruins converted into a public garden, draped entirely in wisteria and ivy. The Gothic window arches now frame pure sky. Spring wisteria is extraordinary. Autumn golden leaves are equally beautiful.", "bestTime": "April-May for wisteria \u00b7 October for autumn colour", "do": ["Sit inside the ruined nave (benches provided)", "Photograph the Gothic window arches against sky", "The climbing plants change every season \u2014 worth multiple visits"], "avoid": "Nothing \u2014 perfect any time of year", "savings": "Free. Unique experience equivalent tours charge \u00a315. Saving: \u00a315", "transport": "Monument (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily dawn to dusk", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "parks": [{"num": 1, "name": "St James's Park \u2014 Pelican Rock", "area": "Westminster", "lat": 51.5025, "lng": -0.1352, "emoji": "\ud83e\udd85", "color": "#14532d", "walkFrom": "Start here", "cost": "Free", "tip": "The pelicans in St James's Park have been here since 1664 \u2014 a gift from the Russian Ambassador. They're fed at 2:30pm daily, 15 metres from the footpath. Most tourists photograph the palace view; the real hidden gem is the pelican feeding and the bridge's view of Buckingham Palace.", "bestTime": "2:30pm for pelican feeding \u00b7 Sunset for palace view", "do": ["Pelican feeding at 2:30pm daily (near Duck Island)", "The bridge: best free view of Buckingham Palace", "Duck Island Cottage (1840) \u2014 find the secret garden gate"], "avoid": "Summer weekends \u2014 people everywhere", "savings": "Admission: free (royal park). Guided tour of the park: \u00a315. Free with this guide. Saving: \u00a315", "transport": "St James's Park (2 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 5am\u2013midnight", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "Hyde Park \u2014 The Serpentine Speakers' Corner", "area": "Hyde Park", "lat": 51.5107, "lng": -0.1731, "emoji": "\ud83c\udfa4", "color": "#14532d", "walkFrom": "20 min walk or tube", "cost": "Free", "tip": "Speakers' Corner (Sunday mornings) is extraordinary \u2014 anyone can say anything, and the debates get fierce. The Serpentine Gallery (free) has major contemporary art. Few people know the Lido restaurant deck gives free views of the lake without eating.", "bestTime": "Sunday 10am\u20131pm for Speakers' Corner", "do": ["Speakers' Corner Sunday 10am: genuinely unmissable", "Serpentine Gallery \u2014 free contemporary art", "The Italian Water Gardens (north end) \u2014 hidden gem"], "avoid": "Avoid the cycle path on foot", "savings": "Free entry. Guided London walks charge \u00a315. Saving: \u00a315", "transport": "Marble Arch or Hyde Park Corner (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 5am\u2013midnight", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "Regent's Park \u2014 Inner Circle Secret Garden", "area": "Regent's Park", "lat": 51.5278, "lng": -0.154, "emoji": "\ud83c\udf39", "color": "#14532d", "walkFrom": "25 min or tube", "cost": "Free", "tip": "Inside Regent's Park is the Inner Circle, and inside that is Queen Mary's Rose Garden \u2014 12,000 rose bushes and almost entirely deserted during the week. Bloom peaks in June. The Open Air Theatre is inside this garden (evening performances).", "bestTime": "June for 12,000 roses in bloom", "do": ["Queen Mary's Rose Garden \u2014 free and extraordinary in June", "Open Air Theatre (evening \u2014 ticketed but magical)", "Heron rookery on the boating lake (free)"], "avoid": "Arriving by car", "savings": "Open Air Theatre tickets: \u00a325\u201345. Garden entry: free. Saving for garden visit: free", "transport": "Baker Street or Regent's Park (8 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 5am\u2013dusk", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "Greenwich Park \u2014 Observatory Hilltop", "area": "Greenwich", "lat": 51.4779, "lng": -0.0015, "emoji": "\ud83d\udd2d", "color": "#14532d", "walkFrom": "DLR + walk", "cost": "Free park \u00b7 \u00a316 Observatory", "tip": "The hilltop view from the Royal Observatory is the finest panoramic view of London for free \u2014 you don't pay to stand on the hill, only to enter the Observatory building. The view takes in Canary Wharf, the City and the river. At sunset it's extraordinary.", "bestTime": "Clear day late afternoon for the city skyline", "do": ["Free hilltop view (no ticket needed)", "Stand on the Prime Meridian line \u2014 the brass strip in the path (free)", "Cutty Sark nearby \u2014 book online for \u00a32 discount"], "avoid": "Foggy days \u2014 the view is the point", "savings": "The View from the Shard costs \u00a333 for a similar panorama. This is free. Saving: \u00a333", "transport": "Cutty Sark DLR (15 min walk uphill) or bus 386", "transport_cost": "Zone 2 \u2014 ~\u00a33 from central London on a single", "openHours": "Park: Daily 6am\u2013dusk", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "vintage_markets": [{"num": 1, "name": "Portobello Road Market", "area": "Notting Hill", "lat": 51.5171, "lng": -0.2035, "emoji": "\ud83d\udecd\ufe0f", "color": "#7c2d12", "walkFrom": "Start here", "cost": "Free entry", "tip": "The world's largest antiques market \u2014 1,000 stalls on Saturdays. The secret: arrive at 7am before dealers, walk from Notting Hill Gate south toward Ladbroke Grove. The early stalls are trade \u2014 dealers buying from dealers \u2014 and you can often buy at the same price.", "bestTime": "Saturday 7\u20139am for trade prices", "do": ["Arrive 7am \u2014 dealers buy before tourists wake up", "The section under the Westway arches: fashion & vinyl", "The antiques are Golborne Road end \u2014 cheapest stalls"], "avoid": "Saturday noon \u2014 impossibly crowded", "savings": "Dealers mark up 200\u2013400% by 10am. Arriving at 7am saves: \u00a320\u2013100 per find", "transport": "Notting Hill Gate (5 min walk)", "transport_cost": "Zone 2", "openHours": "Sat 8am\u20135pm (antiques) \u00b7 Mon\u2013Fri partial market", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "Brick Lane Vintage Market", "area": "Shoreditch", "lat": 51.5232, "lng": -0.0716, "emoji": "\ud83d\udc57", "color": "#7c2d12", "walkFrom": "30 min or tube", "cost": "Free entry", "tip": "Sunday only. The Truman Brewery complex houses Vintage Market (10am\u20135pm) with 150+ vendors. The secret floor: upstairs in the Old Truman Brewery main building has the best and cheapest stalls \u2014 most visitors stay ground floor.", "bestTime": "Sunday 10\u201311am before it gets busy", "do": ["Upstairs Truman Brewery \u2014 cheaper, better stock", "Bagel shops on Brick Lane: 80p bagels, legendary", "The street art changes weekly \u2014 photograph the doorways"], "avoid": "Arriving after noon on Sunday \u2014 manic", "savings": "Vintage shops nearby charge 3x the market price. Saving per item: \u00a315\u201340", "transport": "Shoreditch High Street (Overground) or Liverpool Street (15 min walk)", "transport_cost": "Zone 1", "openHours": "Sunday 10am\u20135pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "Columbia Road Flower Market", "area": "Bethnal Green", "lat": 51.5306, "lng": -0.0784, "emoji": "\ud83c\udf38", "color": "#7c2d12", "walkFrom": "12 min from Brick Lane", "cost": "Free entry", "tip": "Sunday 8am\u20133pm only. 50+ flower stalls selling direct from growers \u2014 prices at close (1:30pm) drop to 10\u201320% of shop prices. The surrounding streets have the best independent vintage and art shops in East London. The cockney flower-seller patter is performance art.", "bestTime": "8\u20139am for best stock \u00b7 1:30pm for dramatic price drops", "do": ["Arrive at 1:30pm \u2014 flowers sell for \u00a31 a bunch", "The surrounding shops on Columbia Road (free browse)", "Caf\u00e9 281 \u2014 the best coffee on the street"], "avoid": "Arriving with a car \u2014 streets close", "savings": "Florists charge \u00a330 for a bouquet that costs \u00a35\u20138 here. Saving: \u00a320+", "transport": "Hoxton Overground (10 min walk)", "transport_cost": "Zone 2", "openHours": "Sunday only 8am\u20133pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "Bermondsey Antiques Market", "area": "Bermondsey", "lat": 51.4983, "lng": -0.0806, "emoji": "\u231a", "color": "#7c2d12", "walkFrom": "30 min or tube", "cost": "Free entry", "tip": "The professionals' market \u2014 dealers, restorers, and serious collectors only before 9am. By law, sellers of stolen goods could claim ignorance if sold before sunrise (an old piece of law now repealed but the 4am tradition continues). Start time is now 6am.", "bestTime": "Friday 6\u20138am for dealer prices", "do": ["Friday only \u2014 starts at 6am (bring a torch in winter)", "Silver, jewellery, clocks \u2014 extraordinary quality", "The caf\u00e9 across the road opens at 6am for traders"], "avoid": "Arriving after 10am \u2014 best stock gone", "savings": "Items available here for \u00a320 sell in antique shops for \u00a3100+. Saving: massive", "transport": "Bermondsey (5 min walk) or London Bridge (12 min walk)", "transport_cost": "Zone 2", "openHours": "Friday only, 6am\u20132pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 5, "name": "Petticoat Lane Market", "area": "Spitalfields/Aldgate", "lat": 51.5155, "lng": -0.0757, "emoji": "\ud83e\udde5", "color": "#7c2d12", "walkFrom": "25 min from Bermondsey", "cost": "Free entry", "tip": "London's oldest street market (officially since 1936 but trading since the 17th century). Sunday only for the full market. The surrounding Spitalfields area has Georgian Huguenot houses now occupied by Bangladeshi families \u2014 a direct line of immigrant history over 300 years.", "bestTime": "Sunday morning 9\u201311am", "do": ["Wander Fournier Street for the architectural history", "The Bangladeshi sweet shops on Brick Lane (1 min away)", "Bargain hard \u2014 expected by all traders"], "avoid": "Arriving expecting a vintage market \u2014 it's budget clothing and household goods, but authentic London", "savings": "Street markets are the original cheap shopping. Average saving vs shops: 40\u201360%", "transport": "Aldgate East (3 min walk) or Liverpool Street (8 min walk)", "transport_cost": "Zone 1", "openHours": "Sunday 9am\u20132pm (Wentworth Street also Mon\u2013Fri)", "rating": "\u2605\u2605\u2605\u2606\u2606"}], "sherlock_holmes": [{"num": 1, "name": "221B Baker Street \u2014 The Sherlock Holmes Museum", "area": "Baker Street", "lat": 51.5237, "lng": -0.1585, "emoji": "\ud83c\udfa9", "color": "#292524", "walkFrom": "Start here", "cost": "\u00a316 museum / free outside", "tip": "The actual 221B Baker Street is now the Abbey National bank headquarters (originally) \u2014 the museum is at 239 Baker Street but numbered 221B by special permission. The free exterior photograph is identical to the paid one inside. But do go in \u2014 the Victorian recreation is genuinely excellent.", "bestTime": "Tuesday\u2013Thursday to avoid weekend queues", "do": ["Interior recreation of the sitting room (worth the \u00a316)", "The detective agency in the basement", "Find the police blue plaque on the correct wall"], "avoid": "Weekends July\u2013August \u2014 45 min queue", "savings": "Book online \u2014 no discount but saves queuing. The FREE exterior photo is indistinguishable in Instagram. Saving: \u00a316 if you just want the photo", "transport": "Baker Street (2 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 9:30am\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 2, "name": "The Criterion Restaurant \u2014 Where Watson Met Holmes", "area": "Piccadilly Circus", "lat": 51.5098, "lng": -0.1358, "emoji": "\ud83c\udf7d\ufe0f", "color": "#292524", "walkFrom": "25 min or tube", "cost": "Free to visit \u00b7 \u00a3\u00a3\u00a3 to dine", "tip": "In A Study in Scarlet, Stamford introduces Watson to Holmes at the Criterion Bar. The actual restaurant still exists and the Victorian gold mosaic ceiling is original. You can walk in, stand at the bar, order a coffee, and be standing where Watson first heard of Holmes. The ceiling alone is worth a visit.", "bestTime": "Midday on a weekday for the bar (no reservation needed)", "do": ["Stand at the bar where Watson met Stamford", "Look up \u2014 the original 1870s gold mosaic ceiling", "A coffee here is \u00a35 \u2014 expensive but in a genuine Canonical location"], "avoid": "Dinner \u2014 very expensive. The bar for a drink or coffee is perfect.", "savings": "Bar visit: \u00a35 coffee. Sherlock Holmes tours: \u00a322pp. Saving: \u00a317", "transport": "Piccadilly Circus (2 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Sat 11:30am\u201311pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "Aldgate \u2014 The Sign of the Four Locations", "area": "Aldgate", "lat": 51.514, "lng": -0.0761, "emoji": "\ud83d\uddfa\ufe0f", "color": "#292524", "walkFrom": "30 min or tube", "cost": "Free", "tip": "The Sign of the Four opens in Pondicherry Lodge \u2014 based on a real house in Upper Norwood. But the Aldgate area is where Holmes tracked Jonathan Small. The Victorian docklands atmosphere of Wapping and Shadwell survives almost intact.", "bestTime": "Anytime \u2014 these are street locations", "do": ["Wapping High Street \u2014 Victorian warehouses identical to Holmes era", "The Captain Kidd pub (Wapping) \u2014 atmosphere perfect for Holmes", "The Thames foreshore at low tide \u2014 mudlarking like in the stories"], "avoid": "Nothing \u2014 great area to explore freely", "savings": "Sherlock Holmes walking tours: \u00a322. This route: free. Saving: \u00a322", "transport": "Aldgate (Zone 1) or Wapping Overground (Zone 2)", "transport_cost": "Zone 1\u20132", "openHours": "Always accessible", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 4, "name": "The Sherlock Holmes Pub \u2014 Northumberland Street", "area": "Charing Cross", "lat": 51.5074, "lng": -0.1241, "emoji": "\ud83c\udf7a", "color": "#292524", "walkFrom": "25 min from Aldgate", "cost": "Free entry", "tip": "Northumberland Street is the Northumberland Hotel of The Hound of the Baskervilles. The Sherlock Holmes pub here has a recreation of the Baker Street sitting room behind glass on the first floor \u2014 accessible for free. The pub itself has genuine Victorian fittings and reasonable prices.", "bestTime": "Midday for the first floor room viewing", "do": ["First floor: the recreated Baker Street room (free to view)", "The pub memorabilia collection", "A drink on Northumberland Street \u2014 genuinely Canonical"], "avoid": "Post-theatre evenings \u2014 rammed", "savings": "Free entry to the recreation. Near the hotel from Baskervilles. Saving vs guided tour: \u00a322", "transport": "Charing Cross (3 min walk) or Embankment (3 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Thu 10am\u201311:30pm, Fri\u2013Sat 10am\u2013midnight, Sun 10am\u201311pm", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 5, "name": "Limehouse \u2014 The Opium Den Streets", "area": "Limehouse", "lat": 51.5123, "lng": -0.0369, "emoji": "\u2693", "color": "#292524", "walkFrom": "DLR from Bank", "cost": "Free", "tip": "In The Man with the Twisted Lip, Holmes disguises himself in an opium den in Upper Swandam Lane, Limehouse. The actual street (now Narrow Street) still has original Victorian warehouses and the same river atmosphere. The Grapes pub (1583) was Dickens's local and has barely changed.", "bestTime": "Evening for the Victorian dock atmosphere", "do": ["Narrow Street \u2014 original Victorian warehouses", "The Grapes pub (1583) \u2014 oldest pub atmosphere in East London", "The Limehouse Basin \u2014 unchanged from Holmes's era"], "avoid": "Arriving by car \u2014 parking impossible", "savings": "East London history tours: \u00a318. Free self-guided: saving \u00a318", "transport": "Limehouse DLR (5 min walk)", "transport_cost": "Zone 2 \u2014 ~\u00a33 from central London", "openHours": "Streets always accessible \u00b7 The Grapes: daily 12\u201311pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "shakespeare": [{"num": 1, "name": "Globe Theatre & Park \u2014 Original Site", "area": "Bankside", "lat": 51.5081, "lng": -0.0972, "emoji": "\ud83c\udfad", "color": "#3b0764", "walkFrom": "Start here", "cost": "Free outside \u00b7 \u00a35-25 standing/seated", "tip": "The reconstructed Globe (1997) is 230 metres from the original site \u2014 a plaque marks the exact location on Park Street. Standing tickets (called 'groundlings' as in Shakespeare's day) cost \u00a35 \u2014 the most authentic theatrical experience in London and the cheapest way to see a Shakespeare play.", "bestTime": "Groundling standing tickets: May\u2013October \u00b7 Catch the matin\u00e9e", "do": ["\u00a35 groundling tickets \u2014 standing in front of the stage", "The free exhibition (ground floor, no ticket needed)", "Find the original Globe site plaque on Park Street"], "avoid": "Paying for seated tickets without checking groundling availability", "savings": "West End Shakespeare: \u00a360\u201390. Globe groundling: \u00a35. Saving: \u00a355+", "transport": "London Bridge (10 min walk) or Southwark (8 min walk)", "transport_cost": "Zone 1", "openHours": "Theatre season May\u2013Oct. Exhibition daily 10am\u20135pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "Southwark Cathedral \u2014 Shakespeare Memorial", "area": "Bankside", "lat": 51.5054, "lng": -0.0904, "emoji": "\u26ea", "color": "#3b0764", "walkFrom": "8 min walk east", "cost": "Free", "tip": "Shakespeare's brother Edmund is buried here (died 1607). The Cathedral contains a Shakespeare Memorial \u2014 a recumbent alabaster effigy (1912) in the exact location where he'd have worshipped. The stained glass windows behind the effigy depict scenes from the plays.", "bestTime": "Weekday morning \u2014 very quiet", "do": ["Find Edmund Shakespeare's burial record", "The Shakespeare Memorial \u2014 less visited than the Globe", "The medieval retrochoir \u2014 unchanged since Shakespeare's time"], "avoid": "Lunchtime \u2014 borough market tourists pass through", "savings": "Free entry. Shakespeare literary tours: \u00a320. Saving: \u00a320", "transport": "London Bridge (3 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 8am\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "The George Inn \u2014 Shakespeare's Local", "area": "Borough", "lat": 51.5016, "lng": -0.0902, "emoji": "\ud83c\udf77", "color": "#3b0764", "walkFrom": "5 min walk south", "cost": "Free entry", "tip": "London's last surviving galleried coaching inn (1676, rebuilt after fire on original footprint). The National Trust owns it. Shakespeare drank at the original inn \u2014 his publisher operated nearby. Shakespeare Company possibly performed in the courtyard. Free to walk through; drink here if you can.", "bestTime": "Midday on a weekday \u2014 quiet and atmospheric", "do": ["Sit in the open courtyard \u2014 medieval inn experience", "Order a pint of ale \u2014 authentic experience", "Read the National Trust history boards in the gallery"], "avoid": "Weekend evenings \u2014 very crowded", "savings": "Free entry. Shakespeare-themed experiences: \u00a330+. Saving: \u00a330", "transport": "London Bridge (5 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Thu 11am\u201311pm, Fri\u2013Sat 11am\u2013midnight, Sun 12\u201310:30pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "Silver Street \u2014 Shakespeare's Lost House", "area": "City of London", "lat": 51.5161, "lng": -0.0997, "emoji": "\ud83c\udfe0", "color": "#3b0764", "walkFrom": "25 min or tube", "cost": "Free", "tip": "Shakespeare lodged at the house of Christopher Mountjoy, a French Huguenot tiremaker, at the corner of Silver Street and Monkwell Street (now Wood Street/Noble Street area, City). The house is gone but the street pattern is unchanged. A blue plaque at Wood Street marks the spot.", "bestTime": "Any time \u2014 street locations", "do": ["Find the Wood Street blue plaque", "Walk the unchanged medieval street pattern", "St Alban's church tower (Wren) survives nearby \u2014 Shakespeare era atmosphere"], "avoid": "Nothing \u2014 quiet and pleasant", "savings": "Free self-guided vs \u00a320 guided walk. Saving: \u00a320", "transport": "Barbican (5 min walk) or St Paul's (7 min walk)", "transport_cost": "Zone 1", "openHours": "Always accessible", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 5, "name": "Middle Temple Hall \u2014 Shakespeare's Stage", "area": "Temple", "lat": 51.5121, "lng": -0.1085, "emoji": "\u2696\ufe0f", "color": "#3b0764", "walkFrom": "20 min walk", "cost": "Free (public access)", "tip": "Twelfth Night received its first recorded performance in this hall on 2 February 1602 \u2014 the actual original hall, unchanged. The double hammer-beam roof is Elizabethan. The hall is open to the public outside legal terms. You can stand exactly where Shakespeare's play was first performed.", "bestTime": "Public access days \u2014 check middletemple.org.uk", "do": ["Stand in the original performance space", "The double hammer-beam roof \u2014 Elizabethan masterpiece", "The high table where Queen Elizabeth I dined"], "avoid": "During legal term without checking access", "savings": "Free entry. Temple Inns guided tours: \u00a312. Saving: \u00a312", "transport": "Temple (3 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Fri 10am\u20134pm when courts not in session", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "harry_potter": [{"num": 1, "name": "Platform 9\u00be \u2014 King's Cross Station", "area": "King's Cross", "lat": 51.532, "lng": -0.1233, "emoji": "\ud83d\ude82", "color": "#1e1b4b", "walkFrom": "Start here", "cost": "Free \u00b7 \u00a329 Studio Tour (separate)", "tip": "The famous trolley photo point (Platform 9\u00be between platforms 9 and 10) is free and always there \u2014 but has a 20\u201340 minute queue. Go on a weekday before 9am or after 4pm. The actual scene was filmed at platforms 4 and 5 but the 9\u00be installation is the official spot.", "bestTime": "Weekday before 9am \u2014 5 min wait vs 40 min at noon", "do": ["Early morning for short queue at the trolley", "King's Cross Granary Square \u2014 3 min walk, zero tourists", "The station itself (Victorian) is worth photographing"], "avoid": "Saturday noon \u2014 45 minute queue for a 10-second photo", "savings": "Studio Tour at Leavesden is \u00a329 extra and needs a separate trip. London locations: free. Saving: \u00a329", "transport": "King's Cross St Pancras (2 min walk)", "transport_cost": "Zone 1", "openHours": "Station: always open. Trolley photo: daily 8am\u201310pm", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 2, "name": "Australia House \u2014 Gringotts Bank", "area": "Strand", "lat": 51.5134, "lng": -0.1158, "emoji": "\ud83c\udfe6", "color": "#1e1b4b", "walkFrom": "25 min or tube", "cost": "Free exterior", "tip": "The interior of Australia House was used for the Gringotts Bank filming (Philosopher's Stone, 2001). The public cannot usually enter, but the exterior is identical to what you see in the film. The grand Edwardian entrance hall is occasionally open during Commonwealth events.", "bestTime": "Any time for the exterior", "do": ["Photograph the exterior \u2014 identical to Gringotts", "The Strand itself: unchanged since the Edwardian era", "Australia House open days \u2014 check australia.gov.au for public events"], "avoid": "Expecting free interior access (usually Embassy only)", "savings": "HP guided tours walk past and charge \u00a325. Free self-guided. Saving: \u00a325", "transport": "Holborn (5 min walk) or Temple (5 min walk)", "transport_cost": "Zone 1", "openHours": "Exterior always accessible", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 3, "name": "Leadenhall Market \u2014 Diagon Alley", "area": "City of London", "lat": 51.5127, "lng": -0.0836, "emoji": "\ud83e\uddd9", "color": "#1e1b4b", "walkFrom": "20 min or tube", "cost": "Free", "tip": "The Victorian glass-roofed market was used as Diagon Alley and the entrance to the Leaky Cauldron in Philosopher's Stone. The Bull's Head passage (entrance from Whittington Avenue) is the exact shot from the film. The optician at 42 Bull's Head Passage was the Leaky Cauldron exterior.", "bestTime": "Early morning or evening when market quieter", "do": ["Bull's Head passage: the Leaky Cauldron entrance (42 Whittington Ave)", "The main market ceiling \u2014 film this from the centre", "The market itself is extraordinary Victorian architecture"], "avoid": "Lunchtime weekdays \u2014 City workers everywhere", "savings": "HP walking tours: \u00a325. This is free with our guide. Saving: \u00a325", "transport": "Monument or Bank (5 min walk)", "transport_cost": "Zone 1", "openHours": "Market: Mon\u2013Fri 10am\u20136pm. Exterior always open.", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "Claremont Square \u2014 12 Grimmauld Place", "area": "Islington", "lat": 51.5305, "lng": -0.1078, "emoji": "\ud83c\udfe0", "color": "#1e1b4b", "walkFrom": "30 min or tube", "cost": "Free exterior", "tip": "The exterior of 12 Grimmauld Place (Order of the Phoenix film) was filmed at Claremont Square, Islington. Numbers 9\u201313 are the filming location. The square itself is a perfect early Victorian garden square \u2014 private garden for residents but the exterior walk is free.", "bestTime": "Any time \u2014 residential square", "do": ["Find numbers 9-13 on the north side \u2014 exact film location", "The garden square exterior is beautiful Victorian architecture", "Islington's Upper Street nearby for food"], "avoid": "Expecting to enter the private garden", "savings": "HP tour includes this stop and charges \u00a325. Free with our guide. Saving: \u00a325", "transport": "Angel (10 min walk)", "transport_cost": "Zone 1", "openHours": "Exterior always accessible", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 5, "name": "Millennium Bridge \u2014 Deathly Hallows Opening", "area": "Bankside", "lat": 51.5095, "lng": -0.0985, "emoji": "\ud83c\udf09", "color": "#1e1b4b", "walkFrom": "30 min or tube", "cost": "Free", "tip": "The Death Eaters destroy the Millennium Bridge in the opening sequence of Half-Blood Prince (2009). The actual bridge, linking Tate Modern to St Paul's, gives the most iconic view of both. Walk across at golden hour for the scene-matching light. The best free HP photo in London.", "bestTime": "Golden hour (sunset facing St Paul's, sunrise facing Tate)", "do": ["Walk across for the Half-Blood Prince film angle", "St Paul's from the bridge \u2014 identical to the film establishing shot", "Tate Modern Level 10 (free) for the aerial perspective"], "avoid": "Rainy days \u2014 though the Half-Blood Prince was rainy, so arguably atmospheric", "savings": "HP tours include this for \u00a325. Free with our guide. Saving: \u00a325", "transport": "Blackfriars (5 min walk) or Southwark (8 min walk)", "transport_cost": "Zone 1", "openHours": "Always open (pedestrian bridge)", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 6, "name": "Borough Market \u2014 Slug & Jiggers (Leaky Cauldron Interior)", "area": "Borough", "lat": 51.5054, "lng": -0.091, "emoji": "\ud83c\udf7a", "color": "#1e1b4b", "walkFrom": "8 min walk from Millennium Bridge", "cost": "Free entry", "tip": "Borough Market's Winchester Walk was used for additional Diagon Alley scenes. The Victorian railway arches create the exact atmosphere of the wizarding world market. Walk through early morning when stalls are setting up and the stone cobbles and arched railway bridges make you feel genuinely in Rowling's world.", "bestTime": "7\u20139am Saturday when setting up begins", "do": ["Winchester Walk: Victorian railway arches \u2014 pure Diagon Alley", "Early morning for empty atmospheric photography", "The stone cobbles are original Victorian \u2014 same ones in the films"], "avoid": "Noon Saturday", "savings": "Free. HP tours charge \u00a325. Saving: \u00a325", "transport": "London Bridge (5 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Sat from 8am", "rating": "\u2605\u2605\u2605\u2605\u2605"}]};
+const ALL_MAPS  = {"pubs": {"id": "pubs", "title": "Hidden London Pubs & Bars", "subtitle": "12 Secret Pubs \u00b7 3 Hours \u00b7 Holborn to Southwark", "emoji": "\ud83c\udf7a", "color": "#b45309", "accent": "#fbbf24", "retail_value": "\u00a3180", "guide_price": "\u00a312.99", "savings": "\u00a3167", "description": "Skip the tourist trap pubs and drink where Dickens, Churchill and Shakespeare actually drank. These 12 hidden taverns are London's greatest kept secret.", "stops": [{"num": 1, "name": "Ye Olde Cheshire Cheese", "area": "Fleet Street", "lat": 51.5136, "lng": -0.1062, "emoji": "\ud83c\udf7a", "color": "#b45309", "walkFrom": "Start here", "cost": "free entry", "tip": "Rebuilt in 1667 after the Great Fire. Dickens, Tennyson, Voltaire and Teddy Roosevelt all drank here. Order a real ale and find the tiny snugs downstairs \u2014 each one has its own fireplace.", "bestTime": "Weekday lunchtime \u2014 quiet, atmospheric", "do": ["Find the parrot that's been here since 1926", "Order the house porter ale", "Count the low beams \u2014 it's older than the USA"], "avoid": "Friday evenings \u2014 City workers pack it out", "savings": "Tour guides charge \u00a325pp for a pub walk \u2014 this costs \u00a30", "transport": "Chancery Lane tube (6 min walk)", "transport_cost": "Zone 1 \u2014 included in daily cap", "openHours": "Mon\u2013Sat 11am\u201311pm, Sun 12\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "The Cittie of Yorke", "area": "Holborn", "lat": 51.5178, "lng": -0.1125, "emoji": "\ud83c\udff0", "color": "#b45309", "walkFrom": "5 min walk", "cost": "free entry", "tip": "The longest pub bar in Britain \u2014 23 metres of solid mahogany. The huge triangular wine vats above the bar are original 17th century. Utterly theatrical and almost empty mid-week.", "bestTime": "Mid-week afternoon", "do": ["Sit in one of the private wooden cubicles", "Try the house bitter", "Look at the wine vats \u2014 they're 400 years old"], "avoid": "After 6pm when lawyers from Gray's Inn arrive", "savings": "Free to enter vs \u00a318 pub crawl tours", "transport": "Chancery Lane (3 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Sat 11:30am\u201311pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "The Seven Stars", "area": "Lincoln's Inn Fields", "lat": 51.5163, "lng": -0.1156, "emoji": "\u2b50", "color": "#b45309", "walkFrom": "8 min walk", "cost": "free entry", "tip": "Survived the Great Fire of 1667 \u2014 one of the few pubs in London that didn't burn. The landlady's cat has a barrister's wig. Impossibly small, utterly charming.", "bestTime": "Lunch on a weekday", "do": ["Meet the wig-wearing cat", "Order the scotch egg \u2014 legendary", "Try the daily hand-pulled guest ale"], "avoid": "Post-court rushes around 4\u20135pm", "savings": "Hidden gem \u2014 no entry fees ever", "transport": "Holborn (5 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Fri 11am\u201311pm, Sat\u2013Sun 12\u20138pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "The Lamb & Flag", "area": "Covent Garden", "lat": 51.5126, "lng": -0.1237, "emoji": "\ud83d\udc11", "color": "#b45309", "walkFrom": "12 min walk", "cost": "free entry", "tip": "The oldest pub in Covent Garden (1772). The poet Dryden was beaten up by hired thugs in the alley outside in 1679. Now the alley is the best drinking spot \u2014 look for the brass plaque.", "bestTime": "Early evening before theatre crowds", "do": ["Find Dryden's plaque in the alley", "Order the Oxford Blue ale", "Stand in the original timber frame snug"], "avoid": "Saturday evenings", "savings": "Free entry vs \u00a322 Covent Garden pub tour", "transport": "Covent Garden (3 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Thu 11am\u201311pm, Fri\u2013Sat 11am\u2013midnight, Sun 12\u201310:30pm", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 5, "name": "The Nag's Head", "area": "Belgravia", "lat": 51.4988, "lng": -0.1575, "emoji": "\ud83d\udc34", "color": "#b45309", "walkFrom": "20 min or tube", "cost": "free entry", "tip": "No music, no fruit machines, no mobile phones (enforced). London's last truly old-school pub. The landlord will confiscate your phone. No cash machines outside \u2014 bring cash.", "bestTime": "Sunday afternoon \u2014 quiet and perfect", "do": ["Experience a smartphone-free pub", "Try the Adnams Bitter on draught", "Admire the extraordinary collection of junk on the walls"], "avoid": "Trying to pay by card \u2014 cash only", "savings": "An experience money literally cannot buy elsewhere", "transport": "Knightsbridge (8 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Sat 11am\u201311pm, Sun 12\u201310:30pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 6, "name": "The Princess Louise", "area": "Holborn", "lat": 51.5175, "lng": -0.1189, "emoji": "\ud83d\udc51", "color": "#b45309", "walkFrom": "25 min or tube", "cost": "free entry", "tip": "The most spectacular Victorian pub interior in London. Etched glass, faience tiles, a gilded ceiling and separate private booths. Grade II listed \u2014 the interior is a protected national treasure.", "bestTime": "Midday on a weekday when light comes through the etched glass", "do": ["Count the different types of Victorian tile", "Get a private booth at the back", "Try the Sam Smith's ales \u2014 cheapest pints in central London (under \u00a33)"], "avoid": "After 5pm \u2014 packed with office workers", "savings": "Under \u00a33 pints in central London = save \u00a33-5 per drink vs nearby bars", "transport": "Holborn (3 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Sat 11am\u201311pm, Sun 12\u201310:30pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "icon": "\ud83c\udf7a", "price": "\u00a312.99"}, "museums": {"id": "museums", "title": "London's Greatest Museums", "subtitle": "10 World-Class Museums \u00b7 All Free \u00b7 Central London", "emoji": "\ud83c\udfdb\ufe0f", "color": "#0369a1", "accent": "#38bdf8", "retail_value": "\u00a3450+", "guide_price": "\u00a312.99", "savings": "\u00a3437+", "description": "London's world-famous museums are almost all free \u2014 but knowing which galleries to head straight to saves hours. This guide takes you to the best rooms in each museum, skipping the crowds.", "stops": [{"num": 1, "name": "British Museum \u2014 Room 4 (Rosetta Stone)", "area": "Bloomsbury", "lat": 51.5194, "lng": -0.127, "emoji": "\ud83c\udffa", "color": "#0369a1", "walkFrom": "Start here", "cost": "Free", "tip": "Skip the main entrance queue \u2014 enter from the Montague Place back entrance. Room 4 for the Rosetta Stone is always packed; arrive at 10am opening or after 4pm. The Lewis Chessmen in Room 40 are always quiet.", "bestTime": "10am opening or after 4:30pm", "do": ["Room 40: Lewis Chessmen (almost always empty)", "Room 41: Sutton Hoo Helmet", "Ask for the free floor plan at information desk"], "avoid": "Weekday mornings in summer \u2014 school groups", "savings": "Equivalent museums in NYC/Paris charge \u00a320\u2013\u00a330 entry. Saving: \u00a325", "transport": "Holborn (5 min walk) or Tottenham Court Road (8 min)", "transport_cost": "Zone 1 \u2014 all included in daily cap \u00a38.10", "openHours": "Daily 10am\u20135pm (Fri to 8:30pm)", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "National Gallery \u2014 The Sunflowers Room", "area": "Trafalgar Square", "lat": 51.5089, "lng": -0.1283, "emoji": "\ud83c\udfa8", "color": "#0369a1", "walkFrom": "15 min or tube", "cost": "Free", "tip": "Room 43 has Van Gogh's Sunflowers \u2014 arrive early. But the real secret is Room 66: the tiny Rembrandt self-portraits room. Almost never crowded and infinitely more moving than the main galleries.", "bestTime": "Friday late opening (open to 9pm) \u2014 romantic and quiet", "do": ["Room 66: Rembrandt self-portraits (secret gem)", "Room 34: Turner's Fighting Temeraire", "Free guided tours daily at 11:30am and 2:30pm"], "avoid": "Weekend afternoons in summer", "savings": "\u00a325 equivalent at Mus\u00e9e d'Orsay. Saving: \u00a325", "transport": "Charing Cross (3 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 10am\u20136pm (Fri to 9pm)", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "Natural History Museum \u2014 Spirit Collection", "area": "South Kensington", "lat": 51.4966, "lng": -0.1764, "emoji": "\ud83e\udd95", "color": "#0369a1", "walkFrom": "20 min or tube", "cost": "Free", "tip": "The famous diplodocus hall (Hintze Hall) is stunning but rammed. Walk straight through to the Darwin Centre \u2014 the 22-metre glass Cocoon building houses 17 million preserved specimens. Eerily beautiful and almost always quiet.", "bestTime": "Tuesday\u2013Thursday mornings", "do": ["Darwin Centre Cocoon \u2014 17 million specimens behind glass", "Vault Gallery \u2014 the Hope Diamond of London museums", "Book a free scientist talk at the info desk"], "avoid": "School holidays \u2014 dippy the diplodocus gets mobbed", "savings": "Comparable to NYC Museum of Natural History: \u00a328. Saving: \u00a328", "transport": "South Kensington (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 10am\u20135:50pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "Victoria & Albert Museum \u2014 Cast Courts", "area": "South Kensington", "lat": 51.4966, "lng": -0.1722, "emoji": "\ud83d\udc57", "color": "#0369a1", "walkFrom": "8 min walk from NHM", "cost": "Free", "tip": "The main V&A galleries are extraordinary but the Cast Courts (Rooms 46a & 46b) are sensational and virtually unknown. Full-size plaster casts of Michelangelo's David and Trajan's Column \u2014 the only way to see them side by side.", "bestTime": "Midday on a weekday", "do": ["Cast Courts: David AND Trajan's Column for free", "Room 41: the medieval treasury", "The Garden Caf\u00e9 courtyard for a rest"], "avoid": "The gift shop", "savings": "\u00a320 entry equivalent at comparable European museums. Saving: \u00a320", "transport": "South Kensington (8 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 10am\u20135:45pm (Fri to 10pm)", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 5, "name": "Tate Modern \u2014 Turbine Hall + Level 10", "area": "Bankside", "lat": 51.5076, "lng": -0.0994, "emoji": "\ud83c\udfad", "color": "#0369a1", "walkFrom": "25 min or tube", "cost": "Free", "tip": "Level 10 is the best FREE view of St Paul's in London. Take the Blavatnik Building lift \u2014 most visitors don't know it exists. The permanent Turbine Hall commission is always staggering and always free.", "bestTime": "Late afternoon for the St Paul's golden hour view", "do": ["Level 10 viewing platform \u2014 free and extraordinary", "Current Turbine Hall commission (always spectacular)", "Walk the Millennium Bridge for the classic view"], "avoid": "Weekend afternoons", "savings": "The View from The Shard charges \u00a333. Saving: \u00a333", "transport": "Blackfriars (5 min walk)", "transport_cost": "Zone 1", "openHours": "Sun\u2013Thu 10am\u20136pm, Fri\u2013Sat 10am\u201310pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "icon": "\ud83c\udfdb\ufe0f", "price": "\u00a312.99"}, "monuments": {"id": "monuments", "title": "London's World-Famous Monuments", "subtitle": "10 Iconic Landmarks \u00b7 Smart Skips \u00b7 Central London", "emoji": "\ud83c\udff0", "color": "#1e3a5f", "accent": "#c9a84c", "retail_value": "\u00a3280", "guide_price": "\u00a312.99", "savings": "\u00a3267", "description": "Every London monument has a hidden angle, a free viewpoint, or a nearby spot that's better than the paid attraction. This guide gives you the insider approach to all of them.", "stops": [{"num": 1, "name": "Tower of London \u2014 Free Outer Walk", "area": "Tower Hill", "lat": 51.5081, "lng": -0.0759, "emoji": "\ud83d\udc51", "color": "#1e3a5f", "walkFrom": "Start here", "cost": "Free outer / \u00a330 inside", "tip": "The interior is magnificent but \u00a330 per person. The free outer walk along Tower Hill gives stunning views of all the external towers. At 9:30am the Ceremony of the Keys rehearsal is sometimes visible from outside for free.", "bestTime": "Early morning before crowds or golden hour", "do": ["Free photo spots from Tower Hill", "Afternoon: Ceremony of the Keys booking (free \u2014 book at HM Tower)", "Walk down to the river beach at low tide"], "avoid": "Paying \u00a330 without pre-booking \u2014 always book online (saves \u00a34)", "savings": "Book online saves \u00a34pp. Outer walk is completely free. Total saving: \u00a334", "transport": "Tower Hill (2 min walk)", "transport_cost": "Zone 1", "openHours": "Tue\u2013Sat 9am\u20135:30pm, Sun\u2013Mon 10am\u20135:30pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "St Paul's Cathedral \u2014 Free Churchyard", "area": "City of London", "lat": 51.5138, "lng": -0.0983, "emoji": "\u26ea", "color": "#1e3a5f", "walkFrom": "15 min walk", "cost": "Free outside / \u00a321 inside", "tip": "The Whispering Gallery is the paid highlight (\u00a321). But the Cathedral churchyard is free and gives the best exterior views. At 5pm daily, evensong is completely free and genuinely extraordinary \u2014 you sit in the quire for free.", "bestTime": "5pm for free evensong \u2014 one of London's great experiences", "do": ["5pm Evensong \u2014 free entry, quire seats, full choir", "Churchyard photo at golden hour", "Walk down to Millennium Bridge for the classic Tate view"], "avoid": "Paying \u00a321 before checking the free evensong option", "savings": "Free evensong vs \u00a321 entry. Daily saving: \u00a321pp", "transport": "St Paul's (2 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Sat 8:30am\u20134:30pm \u00b7 Evensong daily 5pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "Buckingham Palace \u2014 Free Changing of Guard", "area": "St James's", "lat": 51.5014, "lng": -0.1419, "emoji": "\ud83d\udc51", "color": "#1e3a5f", "walkFrom": "25 min or tube", "cost": "Free", "tip": "The Changing of the Guard is free but the crowds make it miserable if you arrive late. Arrive at 10:30am and stand on the Victoria Memorial \u2014 you're above the crowd and see everything. Alternatively watch from the Mall where you can see the full procession for 200 metres.", "bestTime": "10:30am \u2014 30 mins before the ceremony", "do": ["Stand on Victoria Memorial for elevated free view", "Watch the procession down the Mall", "Check royal.gov.uk for ceremony schedule \u2014 not daily"], "avoid": "Standing at the palace gates \u2014 worst view, most people", "savings": "Some 'tours' charge \u00a315 to 'guide' you to free events. Pure saving: \u00a315", "transport": "Victoria (8 min walk) or St James's Park (5 min walk)", "transport_cost": "Zone 1", "openHours": "Check royal.gov.uk \u2014 usually 11am Mon/Wed/Fri/Sun", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 4, "name": "The Monument \u2014 City of London", "area": "Monument", "lat": 51.5101, "lng": -0.0862, "emoji": "\ud83d\udd25", "color": "#1e3a5f", "walkFrom": "20 min from Buckingham Palace", "cost": "\u00a36 adults", "tip": "London's most overlooked viewpoint \u2014 202 feet tall, designed by Wren after the 1666 Great Fire. The column is exactly 202 feet from the spot where the fire started. Climb 311 steps for a stunning low-level city view with no glass barriers. You get a certificate at the top.", "bestTime": "Mid-morning weekday \u2014 rarely busy", "do": ["Climb all 311 steps for the certificate", "Photograph the City skyline with no glass", "Find the Latin inscription blaming Catholics for the Fire (later removed)"], "avoid": "Arriving just before 5pm closing", "savings": "Sky Garden charges \u00a30 but requires booking. The Monument's \u00a36 buys an authentic experience and certificate", "transport": "Monument (1 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 9:30am\u20136pm (last entry 5:30pm)", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 5, "name": "Sky Garden \u2014 Free 360\u00b0 View", "area": "Fenchurch Street", "lat": 51.5115, "lng": -0.0836, "emoji": "\ud83c\udf3f", "color": "#1e3a5f", "walkFrom": "5 min from Monument", "cost": "Free (pre-book)", "tip": "The best FREE view in London. 35 floors up, 360\u00b0 glass-enclosed garden with tropical plants. Completely free \u2014 you just need to book online in advance at skygarden.london. The viewing platforms on floors 35, 36 and 37 are extraordinary.", "bestTime": "Sunset (book the latest slot) for golden hour views", "do": ["Book free tickets at skygarden.london (essential)", "Floor 36 viewing platform \u2014 most dramatic", "Early morning slots are quietest"], "avoid": "Trying to walk in without a booking \u2014 impossible", "savings": "The Shard charges \u00a333 for a worse view. Saving: \u00a333 per person", "transport": "Monument (3 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Fri 10am\u20136pm, Sat\u2013Sun 9am\u20139pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "icon": "\ud83c\udff0", "price": "\u00a312.99"}, "forts": {"id": "forts", "title": "London's Hidden Forts & Defences", "subtitle": "8 Historic Military Sites \u00b7 3 Hours \u00b7 Thames & City", "emoji": "\ud83c\udff0", "color": "#374151", "accent": "#9ca3af", "retail_value": "\u00a3120", "guide_price": "\u00a39.99", "savings": "\u00a3110", "description": "From Roman walls to Cold War bunkers, London's military history is layered beneath the city streets. Most of these sites are free, hidden in plain sight, and completely unknown to tourists.", "stops": [{"num": 1, "name": "Roman London Wall \u2014 Barbican", "area": "Barbican/City", "lat": 51.5196, "lng": -0.0963, "emoji": "\ud83c\udfdb\ufe0f", "color": "#374151", "walkFrom": "Start here", "cost": "Free", "tip": "The best-preserved section of the original Roman London Wall (AD 200) stands in a garden next to the Barbican. 15 metres tall in places. Most people walk past without noticing it's 1,800 years old.", "bestTime": "Any time \u2014 always accessible", "do": ["Walk the full remaining section (follow yellow Roman Wall signs)", "Find the medieval tower built on top of the Roman base", "Touch the original Roman concrete \u2014 it's harder than modern cement"], "avoid": "Nothing \u2014 always open and peaceful", "savings": "History tours charge \u00a320pp. This is free and better. Saving: \u00a320", "transport": "Barbican (3 min walk) or St Paul's (7 min walk)", "transport_cost": "Zone 1", "openHours": "Always open", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "Tower of London Outer Defences", "area": "Tower Hill", "lat": 51.5081, "lng": -0.0759, "emoji": "\ud83d\uddfc", "color": "#374151", "walkFrom": "15 min walk", "cost": "Free outer", "tip": "Walk the outer walls of the Tower for free \u2014 the full moat perimeter (now a garden) and all external towers are accessible without a ticket. The outer ward gives you the best views of the medieval military architecture.", "bestTime": "Early morning before the paid crowds", "do": ["Walk the full moat perimeter (now a garden)", "Find the Traitors' Gate from the river path", "Read the execution accounts on the information boards \u2014 free"], "avoid": "Paying \u00a330 without researching what's free outside first", "savings": "The free outer walk gives 40% of the experience. Saving: \u00a330", "transport": "Tower Hill (2 min walk)", "transport_cost": "Zone 1", "openHours": "Always open (outer)", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 3, "name": "Churchill War Rooms", "area": "Westminster", "lat": 51.5021, "lng": -0.1286, "emoji": "\ud83c\udf96\ufe0f", "color": "#374151", "walkFrom": "20 min or tube", "cost": "\u00a326 (IWM)", "tip": "The actual underground bunker from which Churchill directed WWII, preserved exactly as it was on 15 August 1945. The Map Room still has the last pins in the exact positions from VE Day. Book online for \u00a32 discount.", "bestTime": "Tue\u2013Thu mornings \u2014 quietest", "do": ["Stand in Churchill's actual study where he broadcast", "The Map Room \u2014 last positions from 1945 still in place", "Churchill Museum attached \u2014 included in ticket"], "avoid": "Weekends \u2014 book Tuesday or Wednesday for half the crowds", "savings": "Book online saves \u00a32. Audio guide included. Saving vs tour: \u00a315", "transport": "Westminster (5 min walk) or St James's Park (5 min)", "transport_cost": "Zone 1", "openHours": "Daily 9:30am\u20136pm (last entry 5pm)", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "London Mithraeum \u2014 Roman Temple", "area": "City of London", "lat": 51.512, "lng": -0.0894, "emoji": "\u2694\ufe0f", "color": "#374151", "walkFrom": "20 min walk", "cost": "Free (timed entry)", "tip": "A fully excavated Roman temple to the god Mithras (AD 240), found when clearing bomb damage in 1954. Now preserved in the basement of Bloomberg HQ. Free timed entry \u2014 book online. Sound and light installation is astonishing.", "bestTime": "Any day \u2014 book a morning slot", "do": ["Book free timed entry at londonmithraeum.com", "The sound and light experience recreating Roman ritual", "See real Roman artefacts found on site"], "avoid": "Forgetting to book \u2014 they turn you away without a slot", "savings": "Completely free. Comparable experience in Rome costs \u20ac12. Saving: \u00a310", "transport": "Mansion House (3 min walk)", "transport_cost": "Zone 1", "openHours": "Tue\u2013Sun 10am\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "icon": "\u2694\ufe0f", "price": "\u00a39.99"}, "ww_memorials": {"id": "ww_memorials", "title": "London WW1 & WW2 Memories & Museums", "subtitle": "10 Powerful Sites \u00b7 All Areas \u00b7 Historical Journey", "emoji": "\ud83c\udf96\ufe0f", "color": "#1f2937", "accent": "#d1d5db", "retail_value": "\u00a3200", "guide_price": "\u00a312.99", "savings": "\u00a3187", "description": "London was bombed, evacuated, and transformed by two world wars. These 10 sites \u2014 from Churchill's bunker to bombed churches \u2014 tell the story that school history books can't capture.", "stops": [{"num": 1, "name": "Churchill War Rooms", "area": "Westminster", "lat": 51.5021, "lng": -0.1286, "emoji": "\ud83c\udf96\ufe0f", "color": "#1f2937", "walkFrom": "Start here", "cost": "\u00a326 IWM", "tip": "The original underground bunker, untouched since August 1945. The last pin placed in the Map Room is still exactly where Churchill's chief of staff left it. Walk Churchill's personal route from his sleeping quarters to the Map Room.", "bestTime": "Tuesday\u2013Thursday to avoid weekend crowds", "do": ["Churchill's bedroom \u2014 see his actual dispatch box", "The Map Room (1945 unchanged)", "Listen to his actual radio broadcast in the original room"], "avoid": "Weekends", "savings": "Book online saves \u00a32 + audio guide included. vs \u00a340 WWII tour: saving \u00a316", "transport": "Westminster (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 9:30am\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "St Clement Danes \u2014 RAF Church", "area": "Strand", "lat": 51.5137, "lng": -0.1135, "emoji": "\u2708\ufe0f", "color": "#1f2937", "walkFrom": "12 min walk", "cost": "Free", "tip": "The official church of the RAF. The floor is inlaid with the badges of every RAF squadron. During the Blitz it was gutted completely \u2014 the rebuilt interior contains the original bells, recovered from the rubble. Ring the bells if you're there at the hour.", "bestTime": "11am when the bells ring", "do": ["See the squadron badges in the floor", "Find the Polish Air Force memorial \u2014 often overlooked", "Attend the free Sunday service \u2014 moving and historic"], "avoid": "Nothing \u2014 always peaceful and free", "savings": "Free entry. WWII walking tours charge \u00a318. Saving: \u00a318", "transport": "Temple (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 9am\u20134pm", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 3, "name": "Imperial War Museum", "area": "Lambeth", "lat": 51.4979, "lng": -0.1091, "emoji": "\ud83c\udfdb\ufe0f", "color": "#1f2937", "walkFrom": "25 min or tube", "cost": "Free", "tip": "The Holocaust Galleries (permanent, free) are among the most powerful museum experiences in the world. The giant naval guns outside were fired in both World Wars. The WWII gallery on Level 1 covers the Blitz with photographs, objects and survivor testimony.", "bestTime": "Weekday morning for the Holocaust Galleries when quieter", "do": ["Holocaust Galleries \u2014 free and essential", "WWII Blitz section \u2014 London photographs", "The original Enigma machine \u2014 free to see"], "avoid": "Going without comfortable shoes \u2014 it's a big building", "savings": "Comparable museums in DC charge $20+. Free here. Saving: \u00a318", "transport": "Lambeth North (8 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 10am\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "St Dunstan in the East \u2014 Bombed Church Garden", "area": "City of London", "lat": 51.5099, "lng": -0.0832, "emoji": "\ud83c\udf3f", "color": "#1f2937", "walkFrom": "25 min or tube", "cost": "Free", "tip": "A medieval church bombed in the Blitz, the ruins left standing and converted into a public garden. The walls are draped in ivy, the Gothic windows frame the sky. London's most hauntingly beautiful space \u2014 and almost no tourists know it exists.", "bestTime": "Spring for the wisteria \u00b7 Golden hour", "do": ["Sit in the ruined nave for 20 minutes", "Photograph through the Gothic window arches", "Find the Wren tower \u2014 survived 1666 Fire AND the Blitz"], "avoid": "Nothing \u2014 always peaceful", "savings": "A free, unique London experience. Similar 'ruin garden' in Rome costs \u20ac8. Saving: \u00a38", "transport": "Monument (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily dawn to dusk", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 5, "name": "The Cenotaph & Horse Guards Parade", "area": "Whitehall", "lat": 51.504, "lng": -0.1279, "emoji": "\ud83d\udd4a\ufe0f", "color": "#1f2937", "walkFrom": "20 min from IWM", "cost": "Free", "tip": "The national memorial to the war dead, designed by Lutyens in 1920. The inscription 'The Glorious Dead' was Kipling's suggestion. On normal days you can walk up and read the names. Horse Guards Parade behind it was used as a prisoner of war cage in WWII.", "bestTime": "Early morning when no tourists about \u2014 deeply moving", "do": ["Read the full Cenotaph inscription", "Walk through to Horse Guards Parade", "Cabinet War Rooms are 3 min away for context"], "avoid": "Remembrance Sunday (11 Nov) unless you specifically want the ceremony", "savings": "Free. Guided Whitehall tours charge \u00a315. Saving: \u00a315", "transport": "Westminster (5 min walk)", "transport_cost": "Zone 1", "openHours": "Always accessible", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "icon": "\ud83c\udf96\ufe0f", "price": "\u00a312.99"}, "gardens": {"id": "gardens", "title": "London's Secret Gardens", "subtitle": "10 Hidden Green Spaces \u00b7 All Free \u00b7 Central London", "emoji": "\ud83c\udf38", "color": "#166534", "accent": "#86efac", "retail_value": "\u00a3150", "guide_price": "\u00a39.99", "savings": "\u00a3140", "description": "Beyond the famous parks, London hides extraordinary secret gardens \u2014 from physic gardens to walled Tudor retreats. All free, most unknown to tourists, and each with its own story.", "stops": [{"num": 1, "name": "Postman's Park \u2014 Watts Memorial", "area": "City of London", "lat": 51.5163, "lng": -0.0982, "emoji": "\ud83c\udf37", "color": "#166534", "walkFrom": "Start here", "cost": "Free", "tip": "A hidden garden containing the Watts Memorial to Heroic Self-Sacrifice \u2014 a Victorian wall of ceramic tiles, each commemorating an ordinary person who died saving someone else. Featured in the film Closer. Profoundly moving and completely unknown.", "bestTime": "Lunchtime on a weekday when City workers briefly appear", "do": ["Read every tile on the Watts Memorial", "Find the tile for the oldest commemorated hero", "The garden has benches \u2014 bring a picnic"], "avoid": "Nothing \u2014 always peaceful", "savings": "Free. Garden 'experience' tours charge \u00a312. Saving: \u00a312", "transport": "St Paul's (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 8am\u2013dusk", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "Chelsea Physic Garden", "area": "Chelsea", "lat": 51.4841, "lng": -0.1677, "emoji": "\ud83c\udf3f", "color": "#166534", "walkFrom": "30 min or tube", "cost": "\u00a314 adults", "tip": "Founded in 1673 \u2014 older than Kew. The walled garden that supplied plant specimens to Hans Sloane (who founded the British Museum). The first cotton seeds sent to Georgia, USA, came from this garden. Extraordinary history in a tiny secret space.", "bestTime": "Spring for herb garden \u00b7 Summer for the pond", "do": ["Find the North American Order Bed \u2014 cotton history", "The pharmaceutical garden section", "Ask a gardener \u2014 they're extraordinarily knowledgeable"], "avoid": "Winter \u2014 garden less impressive", "savings": "Free with Art Fund card (\u00a367/year saves hundreds). On its own: \u00a314 is worth it", "transport": "Sloane Square (10 min walk)", "transport_cost": "Zone 1", "openHours": "Feb\u2013Oct, Tue\u2013Fri & Sun 11am\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "Kyoto Garden \u2014 Holland Park", "area": "Holland Park", "lat": 51.5021, "lng": -0.1965, "emoji": "\ud83c\udf8b", "color": "#166534", "walkFrom": "25 min or tube", "cost": "Free", "tip": "A gift from the city of Kyoto in 1991. Waterfalls, koi carp, peacocks wandering freely, a stone lantern. Hidden in the middle of Holland Park. The peacocks routinely perch on the gate posts and look magnificent.", "bestTime": "Spring for cherry blossom \u00b7 Early morning for peacocks", "do": ["Watch the peacocks display at 9\u201310am", "The waterfall from above and below", "Find the stone lantern donated by Kyoto City"], "avoid": "Rainy days (though atmospheric)", "savings": "Comparable Japanese gardens in Europe charge \u20ac8\u201315. Free here. Saving: \u00a312", "transport": "Holland Park (8 min walk)", "transport_cost": "Zone 2", "openHours": "Daily 7:30am\u201330 min before dusk", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "The Roof Garden \u2014 Kensington", "area": "Kensington", "lat": 51.4989, "lng": -0.1933, "emoji": "\ud83c\udf39", "color": "#166534", "walkFrom": "15 min from Holland Park", "cost": "Free when open", "tip": "1.5 acres of garden on the 6th floor of a former Derry & Toms department store. Flamingos, Tudor garden, Spanish garden \u2014 30 metres above Kensington High Street. Access is free when not used for private events \u2014 check the website.", "bestTime": "Weekday mornings when fewer events scheduled", "do": ["Feed the flamingos if accessible", "The Tudor garden section \u2014 extraordinary", "Views over Kensington and London"], "avoid": "Not checking if it's open before visiting \u2014 private events block access", "savings": "Rooftop bars nearby charge \u00a320+ for entry. Free here when open. Saving: \u00a320", "transport": "High Street Kensington (3 min walk)", "transport_cost": "Zone 2", "openHours": "Mon\u2013Fri when not private events \u2014 check virginlimitededition.com", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 5, "name": "St Dunstan in the East Garden", "area": "City of London", "lat": 51.5099, "lng": -0.0832, "emoji": "\u26ea", "color": "#166534", "walkFrom": "30 min or tube", "cost": "Free", "tip": "A Wren church tower with Blitz-bombed ruins converted into a public garden, draped entirely in wisteria and ivy. The Gothic window arches now frame pure sky. Spring wisteria is extraordinary. Autumn golden leaves are equally beautiful.", "bestTime": "April-May for wisteria \u00b7 October for autumn colour", "do": ["Sit inside the ruined nave (benches provided)", "Photograph the Gothic window arches against sky", "The climbing plants change every season \u2014 worth multiple visits"], "avoid": "Nothing \u2014 perfect any time of year", "savings": "Free. Unique experience equivalent tours charge \u00a315. Saving: \u00a315", "transport": "Monument (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily dawn to dusk", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "icon": "\ud83c\udf38", "price": "\u00a39.99"}, "parks": {"id": "parks", "title": "London's Royal Parks & Hidden Green Spaces", "subtitle": "8 Parks & Secret Spots \u00b7 All Free \u00b7 Central London", "emoji": "\ud83c\udf33", "color": "#14532d", "accent": "#4ade80", "retail_value": "\u00a3160", "guide_price": "\u00a39.99", "savings": "\u00a3150", "description": "London has 3,000 parks. The Royal Parks are famous but each one hides spots that even locals don't know. This guide takes you to the exact spots \u2014 the views, the caf\u00e9s, the wildlife \u2014 that make each park extraordinary.", "stops": [{"num": 1, "name": "St James's Park \u2014 Pelican Rock", "area": "Westminster", "lat": 51.5025, "lng": -0.1352, "emoji": "\ud83e\udd85", "color": "#14532d", "walkFrom": "Start here", "cost": "Free", "tip": "The pelicans in St James's Park have been here since 1664 \u2014 a gift from the Russian Ambassador. They're fed at 2:30pm daily, 15 metres from the footpath. Most tourists photograph the palace view; the real hidden gem is the pelican feeding and the bridge's view of Buckingham Palace.", "bestTime": "2:30pm for pelican feeding \u00b7 Sunset for palace view", "do": ["Pelican feeding at 2:30pm daily (near Duck Island)", "The bridge: best free view of Buckingham Palace", "Duck Island Cottage (1840) \u2014 find the secret garden gate"], "avoid": "Summer weekends \u2014 people everywhere", "savings": "Admission: free (royal park). Guided tour of the park: \u00a315. Free with this guide. Saving: \u00a315", "transport": "St James's Park (2 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 5am\u2013midnight", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "Hyde Park \u2014 The Serpentine Speakers' Corner", "area": "Hyde Park", "lat": 51.5107, "lng": -0.1731, "emoji": "\ud83c\udfa4", "color": "#14532d", "walkFrom": "20 min walk or tube", "cost": "Free", "tip": "Speakers' Corner (Sunday mornings) is extraordinary \u2014 anyone can say anything, and the debates get fierce. The Serpentine Gallery (free) has major contemporary art. Few people know the Lido restaurant deck gives free views of the lake without eating.", "bestTime": "Sunday 10am\u20131pm for Speakers' Corner", "do": ["Speakers' Corner Sunday 10am: genuinely unmissable", "Serpentine Gallery \u2014 free contemporary art", "The Italian Water Gardens (north end) \u2014 hidden gem"], "avoid": "Avoid the cycle path on foot", "savings": "Free entry. Guided London walks charge \u00a315. Saving: \u00a315", "transport": "Marble Arch or Hyde Park Corner (5 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 5am\u2013midnight", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "Regent's Park \u2014 Inner Circle Secret Garden", "area": "Regent's Park", "lat": 51.5278, "lng": -0.154, "emoji": "\ud83c\udf39", "color": "#14532d", "walkFrom": "25 min or tube", "cost": "Free", "tip": "Inside Regent's Park is the Inner Circle, and inside that is Queen Mary's Rose Garden \u2014 12,000 rose bushes and almost entirely deserted during the week. Bloom peaks in June. The Open Air Theatre is inside this garden (evening performances).", "bestTime": "June for 12,000 roses in bloom", "do": ["Queen Mary's Rose Garden \u2014 free and extraordinary in June", "Open Air Theatre (evening \u2014 ticketed but magical)", "Heron rookery on the boating lake (free)"], "avoid": "Arriving by car", "savings": "Open Air Theatre tickets: \u00a325\u201345. Garden entry: free. Saving for garden visit: free", "transport": "Baker Street or Regent's Park (8 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 5am\u2013dusk", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "Greenwich Park \u2014 Observatory Hilltop", "area": "Greenwich", "lat": 51.4779, "lng": -0.0015, "emoji": "\ud83d\udd2d", "color": "#14532d", "walkFrom": "DLR + walk", "cost": "Free park \u00b7 \u00a316 Observatory", "tip": "The hilltop view from the Royal Observatory is the finest panoramic view of London for free \u2014 you don't pay to stand on the hill, only to enter the Observatory building. The view takes in Canary Wharf, the City and the river. At sunset it's extraordinary.", "bestTime": "Clear day late afternoon for the city skyline", "do": ["Free hilltop view (no ticket needed)", "Stand on the Prime Meridian line \u2014 the brass strip in the path (free)", "Cutty Sark nearby \u2014 book online for \u00a32 discount"], "avoid": "Foggy days \u2014 the view is the point", "savings": "The View from the Shard costs \u00a333 for a similar panorama. This is free. Saving: \u00a333", "transport": "Cutty Sark DLR (15 min walk uphill) or bus 386", "transport_cost": "Zone 2 \u2014 ~\u00a33 from central London on a single", "openHours": "Park: Daily 6am\u2013dusk", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "icon": "\ud83c\udf33", "price": "\u00a39.99"}, "vintage_markets": {"id": "vintage_markets", "title": "London Vintage Markets & Hidden Gems", "subtitle": "10 Markets \u00b7 Sat & Sun \u00b7 All London", "emoji": "\ud83c\udfaa", "color": "#7c2d12", "accent": "#fb923c", "retail_value": "\u00a3200", "guide_price": "\u00a312.99", "savings": "\u00a3187", "description": "London's vintage scene hides extraordinary finds \u2014 Victorian jewellery for \u00a35, designer labels for pennies, antiques that would cost 10x in a shop. This guide tells you exactly where to go, when to arrive, and what to look for.", "stops": [{"num": 1, "name": "Portobello Road Market", "area": "Notting Hill", "lat": 51.5171, "lng": -0.2035, "emoji": "\ud83d\udecd\ufe0f", "color": "#7c2d12", "walkFrom": "Start here", "cost": "Free entry", "tip": "The world's largest antiques market \u2014 1,000 stalls on Saturdays. The secret: arrive at 7am before dealers, walk from Notting Hill Gate south toward Ladbroke Grove. The early stalls are trade \u2014 dealers buying from dealers \u2014 and you can often buy at the same price.", "bestTime": "Saturday 7\u20139am for trade prices", "do": ["Arrive 7am \u2014 dealers buy before tourists wake up", "The section under the Westway arches: fashion & vinyl", "The antiques are Golborne Road end \u2014 cheapest stalls"], "avoid": "Saturday noon \u2014 impossibly crowded", "savings": "Dealers mark up 200\u2013400% by 10am. Arriving at 7am saves: \u00a320\u2013100 per find", "transport": "Notting Hill Gate (5 min walk)", "transport_cost": "Zone 2", "openHours": "Sat 8am\u20135pm (antiques) \u00b7 Mon\u2013Fri partial market", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "Brick Lane Vintage Market", "area": "Shoreditch", "lat": 51.5232, "lng": -0.0716, "emoji": "\ud83d\udc57", "color": "#7c2d12", "walkFrom": "30 min or tube", "cost": "Free entry", "tip": "Sunday only. The Truman Brewery complex houses Vintage Market (10am\u20135pm) with 150+ vendors. The secret floor: upstairs in the Old Truman Brewery main building has the best and cheapest stalls \u2014 most visitors stay ground floor.", "bestTime": "Sunday 10\u201311am before it gets busy", "do": ["Upstairs Truman Brewery \u2014 cheaper, better stock", "Bagel shops on Brick Lane: 80p bagels, legendary", "The street art changes weekly \u2014 photograph the doorways"], "avoid": "Arriving after noon on Sunday \u2014 manic", "savings": "Vintage shops nearby charge 3x the market price. Saving per item: \u00a315\u201340", "transport": "Shoreditch High Street (Overground) or Liverpool Street (15 min walk)", "transport_cost": "Zone 1", "openHours": "Sunday 10am\u20135pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "Columbia Road Flower Market", "area": "Bethnal Green", "lat": 51.5306, "lng": -0.0784, "emoji": "\ud83c\udf38", "color": "#7c2d12", "walkFrom": "12 min from Brick Lane", "cost": "Free entry", "tip": "Sunday 8am\u20133pm only. 50+ flower stalls selling direct from growers \u2014 prices at close (1:30pm) drop to 10\u201320% of shop prices. The surrounding streets have the best independent vintage and art shops in East London. The cockney flower-seller patter is performance art.", "bestTime": "8\u20139am for best stock \u00b7 1:30pm for dramatic price drops", "do": ["Arrive at 1:30pm \u2014 flowers sell for \u00a31 a bunch", "The surrounding shops on Columbia Road (free browse)", "Caf\u00e9 281 \u2014 the best coffee on the street"], "avoid": "Arriving with a car \u2014 streets close", "savings": "Florists charge \u00a330 for a bouquet that costs \u00a35\u20138 here. Saving: \u00a320+", "transport": "Hoxton Overground (10 min walk)", "transport_cost": "Zone 2", "openHours": "Sunday only 8am\u20133pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "Bermondsey Antiques Market", "area": "Bermondsey", "lat": 51.4983, "lng": -0.0806, "emoji": "\u231a", "color": "#7c2d12", "walkFrom": "30 min or tube", "cost": "Free entry", "tip": "The professionals' market \u2014 dealers, restorers, and serious collectors only before 9am. By law, sellers of stolen goods could claim ignorance if sold before sunrise (an old piece of law now repealed but the 4am tradition continues). Start time is now 6am.", "bestTime": "Friday 6\u20138am for dealer prices", "do": ["Friday only \u2014 starts at 6am (bring a torch in winter)", "Silver, jewellery, clocks \u2014 extraordinary quality", "The caf\u00e9 across the road opens at 6am for traders"], "avoid": "Arriving after 10am \u2014 best stock gone", "savings": "Items available here for \u00a320 sell in antique shops for \u00a3100+. Saving: massive", "transport": "Bermondsey (5 min walk) or London Bridge (12 min walk)", "transport_cost": "Zone 2", "openHours": "Friday only, 6am\u20132pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 5, "name": "Petticoat Lane Market", "area": "Spitalfields/Aldgate", "lat": 51.5155, "lng": -0.0757, "emoji": "\ud83e\udde5", "color": "#7c2d12", "walkFrom": "25 min from Bermondsey", "cost": "Free entry", "tip": "London's oldest street market (officially since 1936 but trading since the 17th century). Sunday only for the full market. The surrounding Spitalfields area has Georgian Huguenot houses now occupied by Bangladeshi families \u2014 a direct line of immigrant history over 300 years.", "bestTime": "Sunday morning 9\u201311am", "do": ["Wander Fournier Street for the architectural history", "The Bangladeshi sweet shops on Brick Lane (1 min away)", "Bargain hard \u2014 expected by all traders"], "avoid": "Arriving expecting a vintage market \u2014 it's budget clothing and household goods, but authentic London", "savings": "Street markets are the original cheap shopping. Average saving vs shops: 40\u201360%", "transport": "Aldgate East (3 min walk) or Liverpool Street (8 min walk)", "transport_cost": "Zone 1", "openHours": "Sunday 9am\u20132pm (Wentworth Street also Mon\u2013Fri)", "rating": "\u2605\u2605\u2605\u2606\u2606"}], "icon": "\ud83c\udfaa", "price": "\u00a312.99"}, "sherlock_holmes": {"id": "sherlock_holmes", "title": "Sherlock Holmes Hidden London", "subtitle": "10 Canonical Locations \u00b7 3 Hours \u00b7 Baker Street to Southwark", "emoji": "\ud83d\udd0d", "color": "#292524", "accent": "#a8a29e", "retail_value": "\u00a3180", "guide_price": "\u00a312.99", "savings": "\u00a3167", "description": "221B Baker Street is the tourist trap. The real Sherlock Holmes London is still there \u2014 gas-lit alleys, Victorian opium den addresses, the Strand hotel where Holmes staged his death. Walk where Conan Doyle actually set the stories.", "stops": [{"num": 1, "name": "221B Baker Street \u2014 The Sherlock Holmes Museum", "area": "Baker Street", "lat": 51.5237, "lng": -0.1585, "emoji": "\ud83c\udfa9", "color": "#292524", "walkFrom": "Start here", "cost": "\u00a316 museum / free outside", "tip": "The actual 221B Baker Street is now the Abbey National bank headquarters (originally) \u2014 the museum is at 239 Baker Street but numbered 221B by special permission. The free exterior photograph is identical to the paid one inside. But do go in \u2014 the Victorian recreation is genuinely excellent.", "bestTime": "Tuesday\u2013Thursday to avoid weekend queues", "do": ["Interior recreation of the sitting room (worth the \u00a316)", "The detective agency in the basement", "Find the police blue plaque on the correct wall"], "avoid": "Weekends July\u2013August \u2014 45 min queue", "savings": "Book online \u2014 no discount but saves queuing. The FREE exterior photo is indistinguishable in Instagram. Saving: \u00a316 if you just want the photo", "transport": "Baker Street (2 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 9:30am\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 2, "name": "The Criterion Restaurant \u2014 Where Watson Met Holmes", "area": "Piccadilly Circus", "lat": 51.5098, "lng": -0.1358, "emoji": "\ud83c\udf7d\ufe0f", "color": "#292524", "walkFrom": "25 min or tube", "cost": "Free to visit \u00b7 \u00a3\u00a3\u00a3 to dine", "tip": "In A Study in Scarlet, Stamford introduces Watson to Holmes at the Criterion Bar. The actual restaurant still exists and the Victorian gold mosaic ceiling is original. You can walk in, stand at the bar, order a coffee, and be standing where Watson first heard of Holmes. The ceiling alone is worth a visit.", "bestTime": "Midday on a weekday for the bar (no reservation needed)", "do": ["Stand at the bar where Watson met Stamford", "Look up \u2014 the original 1870s gold mosaic ceiling", "A coffee here is \u00a35 \u2014 expensive but in a genuine Canonical location"], "avoid": "Dinner \u2014 very expensive. The bar for a drink or coffee is perfect.", "savings": "Bar visit: \u00a35 coffee. Sherlock Holmes tours: \u00a322pp. Saving: \u00a317", "transport": "Piccadilly Circus (2 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Sat 11:30am\u201311pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "Aldgate \u2014 The Sign of the Four Locations", "area": "Aldgate", "lat": 51.514, "lng": -0.0761, "emoji": "\ud83d\uddfa\ufe0f", "color": "#292524", "walkFrom": "30 min or tube", "cost": "Free", "tip": "The Sign of the Four opens in Pondicherry Lodge \u2014 based on a real house in Upper Norwood. But the Aldgate area is where Holmes tracked Jonathan Small. The Victorian docklands atmosphere of Wapping and Shadwell survives almost intact.", "bestTime": "Anytime \u2014 these are street locations", "do": ["Wapping High Street \u2014 Victorian warehouses identical to Holmes era", "The Captain Kidd pub (Wapping) \u2014 atmosphere perfect for Holmes", "The Thames foreshore at low tide \u2014 mudlarking like in the stories"], "avoid": "Nothing \u2014 great area to explore freely", "savings": "Sherlock Holmes walking tours: \u00a322. This route: free. Saving: \u00a322", "transport": "Aldgate (Zone 1) or Wapping Overground (Zone 2)", "transport_cost": "Zone 1\u20132", "openHours": "Always accessible", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 4, "name": "The Sherlock Holmes Pub \u2014 Northumberland Street", "area": "Charing Cross", "lat": 51.5074, "lng": -0.1241, "emoji": "\ud83c\udf7a", "color": "#292524", "walkFrom": "25 min from Aldgate", "cost": "Free entry", "tip": "Northumberland Street is the Northumberland Hotel of The Hound of the Baskervilles. The Sherlock Holmes pub here has a recreation of the Baker Street sitting room behind glass on the first floor \u2014 accessible for free. The pub itself has genuine Victorian fittings and reasonable prices.", "bestTime": "Midday for the first floor room viewing", "do": ["First floor: the recreated Baker Street room (free to view)", "The pub memorabilia collection", "A drink on Northumberland Street \u2014 genuinely Canonical"], "avoid": "Post-theatre evenings \u2014 rammed", "savings": "Free entry to the recreation. Near the hotel from Baskervilles. Saving vs guided tour: \u00a322", "transport": "Charing Cross (3 min walk) or Embankment (3 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Thu 10am\u201311:30pm, Fri\u2013Sat 10am\u2013midnight, Sun 10am\u201311pm", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 5, "name": "Limehouse \u2014 The Opium Den Streets", "area": "Limehouse", "lat": 51.5123, "lng": -0.0369, "emoji": "\u2693", "color": "#292524", "walkFrom": "DLR from Bank", "cost": "Free", "tip": "In The Man with the Twisted Lip, Holmes disguises himself in an opium den in Upper Swandam Lane, Limehouse. The actual street (now Narrow Street) still has original Victorian warehouses and the same river atmosphere. The Grapes pub (1583) was Dickens's local and has barely changed.", "bestTime": "Evening for the Victorian dock atmosphere", "do": ["Narrow Street \u2014 original Victorian warehouses", "The Grapes pub (1583) \u2014 oldest pub atmosphere in East London", "The Limehouse Basin \u2014 unchanged from Holmes's era"], "avoid": "Arriving by car \u2014 parking impossible", "savings": "East London history tours: \u00a318. Free self-guided: saving \u00a318", "transport": "Limehouse DLR (5 min walk)", "transport_cost": "Zone 2 \u2014 ~\u00a33 from central London", "openHours": "Streets always accessible \u00b7 The Grapes: daily 12\u201311pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "icon": "\ud83d\udd0d", "price": "\u00a312.99"}, "shakespeare": {"id": "shakespeare", "title": "Shakespeare's London", "subtitle": "10 Canonical Locations \u00b7 2.5 Hours \u00b7 Bankside to the City", "emoji": "\ud83c\udfad", "color": "#3b0764", "accent": "#c084fc", "retail_value": "\u00a3160", "guide_price": "\u00a312.99", "savings": "\u00a3147", "description": "Shakespeare's London still exists in patches \u2014 the street where he lodged, the site of the Globe, the tavern where his company drank. This walk traces the actual places, not the tourist replicas.", "stops": [{"num": 1, "name": "Globe Theatre & Park \u2014 Original Site", "area": "Bankside", "lat": 51.5081, "lng": -0.0972, "emoji": "\ud83c\udfad", "color": "#3b0764", "walkFrom": "Start here", "cost": "Free outside \u00b7 \u00a35-25 standing/seated", "tip": "The reconstructed Globe (1997) is 230 metres from the original site \u2014 a plaque marks the exact location on Park Street. Standing tickets (called 'groundlings' as in Shakespeare's day) cost \u00a35 \u2014 the most authentic theatrical experience in London and the cheapest way to see a Shakespeare play.", "bestTime": "Groundling standing tickets: May\u2013October \u00b7 Catch the matin\u00e9e", "do": ["\u00a35 groundling tickets \u2014 standing in front of the stage", "The free exhibition (ground floor, no ticket needed)", "Find the original Globe site plaque on Park Street"], "avoid": "Paying for seated tickets without checking groundling availability", "savings": "West End Shakespeare: \u00a360\u201390. Globe groundling: \u00a35. Saving: \u00a355+", "transport": "London Bridge (10 min walk) or Southwark (8 min walk)", "transport_cost": "Zone 1", "openHours": "Theatre season May\u2013Oct. Exhibition daily 10am\u20135pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 2, "name": "Southwark Cathedral \u2014 Shakespeare Memorial", "area": "Bankside", "lat": 51.5054, "lng": -0.0904, "emoji": "\u26ea", "color": "#3b0764", "walkFrom": "8 min walk east", "cost": "Free", "tip": "Shakespeare's brother Edmund is buried here (died 1607). The Cathedral contains a Shakespeare Memorial \u2014 a recumbent alabaster effigy (1912) in the exact location where he'd have worshipped. The stained glass windows behind the effigy depict scenes from the plays.", "bestTime": "Weekday morning \u2014 very quiet", "do": ["Find Edmund Shakespeare's burial record", "The Shakespeare Memorial \u2014 less visited than the Globe", "The medieval retrochoir \u2014 unchanged since Shakespeare's time"], "avoid": "Lunchtime \u2014 borough market tourists pass through", "savings": "Free entry. Shakespeare literary tours: \u00a320. Saving: \u00a320", "transport": "London Bridge (3 min walk)", "transport_cost": "Zone 1", "openHours": "Daily 8am\u20136pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 3, "name": "The George Inn \u2014 Shakespeare's Local", "area": "Borough", "lat": 51.5016, "lng": -0.0902, "emoji": "\ud83c\udf77", "color": "#3b0764", "walkFrom": "5 min walk south", "cost": "Free entry", "tip": "London's last surviving galleried coaching inn (1676, rebuilt after fire on original footprint). The National Trust owns it. Shakespeare drank at the original inn \u2014 his publisher operated nearby. Shakespeare Company possibly performed in the courtyard. Free to walk through; drink here if you can.", "bestTime": "Midday on a weekday \u2014 quiet and atmospheric", "do": ["Sit in the open courtyard \u2014 medieval inn experience", "Order a pint of ale \u2014 authentic experience", "Read the National Trust history boards in the gallery"], "avoid": "Weekend evenings \u2014 very crowded", "savings": "Free entry. Shakespeare-themed experiences: \u00a330+. Saving: \u00a330", "transport": "London Bridge (5 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Thu 11am\u201311pm, Fri\u2013Sat 11am\u2013midnight, Sun 12\u201310:30pm", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "Silver Street \u2014 Shakespeare's Lost House", "area": "City of London", "lat": 51.5161, "lng": -0.0997, "emoji": "\ud83c\udfe0", "color": "#3b0764", "walkFrom": "25 min or tube", "cost": "Free", "tip": "Shakespeare lodged at the house of Christopher Mountjoy, a French Huguenot tiremaker, at the corner of Silver Street and Monkwell Street (now Wood Street/Noble Street area, City). The house is gone but the street pattern is unchanged. A blue plaque at Wood Street marks the spot.", "bestTime": "Any time \u2014 street locations", "do": ["Find the Wood Street blue plaque", "Walk the unchanged medieval street pattern", "St Alban's church tower (Wren) survives nearby \u2014 Shakespeare era atmosphere"], "avoid": "Nothing \u2014 quiet and pleasant", "savings": "Free self-guided vs \u00a320 guided walk. Saving: \u00a320", "transport": "Barbican (5 min walk) or St Paul's (7 min walk)", "transport_cost": "Zone 1", "openHours": "Always accessible", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 5, "name": "Middle Temple Hall \u2014 Shakespeare's Stage", "area": "Temple", "lat": 51.5121, "lng": -0.1085, "emoji": "\u2696\ufe0f", "color": "#3b0764", "walkFrom": "20 min walk", "cost": "Free (public access)", "tip": "Twelfth Night received its first recorded performance in this hall on 2 February 1602 \u2014 the actual original hall, unchanged. The double hammer-beam roof is Elizabethan. The hall is open to the public outside legal terms. You can stand exactly where Shakespeare's play was first performed.", "bestTime": "Public access days \u2014 check middletemple.org.uk", "do": ["Stand in the original performance space", "The double hammer-beam roof \u2014 Elizabethan masterpiece", "The high table where Queen Elizabeth I dined"], "avoid": "During legal term without checking access", "savings": "Free entry. Temple Inns guided tours: \u00a312. Saving: \u00a312", "transport": "Temple (3 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Fri 10am\u20134pm when courts not in session", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "icon": "\ud83c\udfad", "price": "\u00a312.99"}, "harry_potter": {"id": "harry_potter", "title": "Harry Potter's London", "subtitle": "12 Film & Book Locations \u00b7 3 Hours \u00b7 King's Cross to Southwark", "emoji": "\u26a1", "color": "#1e1b4b", "accent": "#818cf8", "retail_value": "\u00a3220", "guide_price": "\u00a314.99", "savings": "\u00a3205", "description": "Beyond Platform 9\u00be, the real Harry Potter London is hiding in plain sight \u2014 the hospital where Harry is born is in the books, the Ministry of Magic entrance is a real red telephone box in Westminster, and Diagon Alley is a real street. This guide finds them all.", "stops": [{"num": 1, "name": "Platform 9\u00be \u2014 King's Cross Station", "area": "King's Cross", "lat": 51.532, "lng": -0.1233, "emoji": "\ud83d\ude82", "color": "#1e1b4b", "walkFrom": "Start here", "cost": "Free \u00b7 \u00a329 Studio Tour (separate)", "tip": "The famous trolley photo point (Platform 9\u00be between platforms 9 and 10) is free and always there \u2014 but has a 20\u201340 minute queue. Go on a weekday before 9am or after 4pm. The actual scene was filmed at platforms 4 and 5 but the 9\u00be installation is the official spot.", "bestTime": "Weekday before 9am \u2014 5 min wait vs 40 min at noon", "do": ["Early morning for short queue at the trolley", "King's Cross Granary Square \u2014 3 min walk, zero tourists", "The station itself (Victorian) is worth photographing"], "avoid": "Saturday noon \u2014 45 minute queue for a 10-second photo", "savings": "Studio Tour at Leavesden is \u00a329 extra and needs a separate trip. London locations: free. Saving: \u00a329", "transport": "King's Cross St Pancras (2 min walk)", "transport_cost": "Zone 1", "openHours": "Station: always open. Trolley photo: daily 8am\u201310pm", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 2, "name": "Australia House \u2014 Gringotts Bank", "area": "Strand", "lat": 51.5134, "lng": -0.1158, "emoji": "\ud83c\udfe6", "color": "#1e1b4b", "walkFrom": "25 min or tube", "cost": "Free exterior", "tip": "The interior of Australia House was used for the Gringotts Bank filming (Philosopher's Stone, 2001). The public cannot usually enter, but the exterior is identical to what you see in the film. The grand Edwardian entrance hall is occasionally open during Commonwealth events.", "bestTime": "Any time for the exterior", "do": ["Photograph the exterior \u2014 identical to Gringotts", "The Strand itself: unchanged since the Edwardian era", "Australia House open days \u2014 check australia.gov.au for public events"], "avoid": "Expecting free interior access (usually Embassy only)", "savings": "HP guided tours walk past and charge \u00a325. Free self-guided. Saving: \u00a325", "transport": "Holborn (5 min walk) or Temple (5 min walk)", "transport_cost": "Zone 1", "openHours": "Exterior always accessible", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 3, "name": "Leadenhall Market \u2014 Diagon Alley", "area": "City of London", "lat": 51.5127, "lng": -0.0836, "emoji": "\ud83e\uddd9", "color": "#1e1b4b", "walkFrom": "20 min or tube", "cost": "Free", "tip": "The Victorian glass-roofed market was used as Diagon Alley and the entrance to the Leaky Cauldron in Philosopher's Stone. The Bull's Head passage (entrance from Whittington Avenue) is the exact shot from the film. The optician at 42 Bull's Head Passage was the Leaky Cauldron exterior.", "bestTime": "Early morning or evening when market quieter", "do": ["Bull's Head passage: the Leaky Cauldron entrance (42 Whittington Ave)", "The main market ceiling \u2014 film this from the centre", "The market itself is extraordinary Victorian architecture"], "avoid": "Lunchtime weekdays \u2014 City workers everywhere", "savings": "HP walking tours: \u00a325. This is free with our guide. Saving: \u00a325", "transport": "Monument or Bank (5 min walk)", "transport_cost": "Zone 1", "openHours": "Market: Mon\u2013Fri 10am\u20136pm. Exterior always open.", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 4, "name": "Claremont Square \u2014 12 Grimmauld Place", "area": "Islington", "lat": 51.5305, "lng": -0.1078, "emoji": "\ud83c\udfe0", "color": "#1e1b4b", "walkFrom": "30 min or tube", "cost": "Free exterior", "tip": "The exterior of 12 Grimmauld Place (Order of the Phoenix film) was filmed at Claremont Square, Islington. Numbers 9\u201313 are the filming location. The square itself is a perfect early Victorian garden square \u2014 private garden for residents but the exterior walk is free.", "bestTime": "Any time \u2014 residential square", "do": ["Find numbers 9-13 on the north side \u2014 exact film location", "The garden square exterior is beautiful Victorian architecture", "Islington's Upper Street nearby for food"], "avoid": "Expecting to enter the private garden", "savings": "HP tour includes this stop and charges \u00a325. Free with our guide. Saving: \u00a325", "transport": "Angel (10 min walk)", "transport_cost": "Zone 1", "openHours": "Exterior always accessible", "rating": "\u2605\u2605\u2605\u2605\u2606"}, {"num": 5, "name": "Millennium Bridge \u2014 Deathly Hallows Opening", "area": "Bankside", "lat": 51.5095, "lng": -0.0985, "emoji": "\ud83c\udf09", "color": "#1e1b4b", "walkFrom": "30 min or tube", "cost": "Free", "tip": "The Death Eaters destroy the Millennium Bridge in the opening sequence of Half-Blood Prince (2009). The actual bridge, linking Tate Modern to St Paul's, gives the most iconic view of both. Walk across at golden hour for the scene-matching light. The best free HP photo in London.", "bestTime": "Golden hour (sunset facing St Paul's, sunrise facing Tate)", "do": ["Walk across for the Half-Blood Prince film angle", "St Paul's from the bridge \u2014 identical to the film establishing shot", "Tate Modern Level 10 (free) for the aerial perspective"], "avoid": "Rainy days \u2014 though the Half-Blood Prince was rainy, so arguably atmospheric", "savings": "HP tours include this for \u00a325. Free with our guide. Saving: \u00a325", "transport": "Blackfriars (5 min walk) or Southwark (8 min walk)", "transport_cost": "Zone 1", "openHours": "Always open (pedestrian bridge)", "rating": "\u2605\u2605\u2605\u2605\u2605"}, {"num": 6, "name": "Borough Market \u2014 Slug & Jiggers (Leaky Cauldron Interior)", "area": "Borough", "lat": 51.5054, "lng": -0.091, "emoji": "\ud83c\udf7a", "color": "#1e1b4b", "walkFrom": "8 min walk from Millennium Bridge", "cost": "Free entry", "tip": "Borough Market's Winchester Walk was used for additional Diagon Alley scenes. The Victorian railway arches create the exact atmosphere of the wizarding world market. Walk through early morning when stalls are setting up and the stone cobbles and arched railway bridges make you feel genuinely in Rowling's world.", "bestTime": "7\u20139am Saturday when setting up begins", "do": ["Winchester Walk: Victorian railway arches \u2014 pure Diagon Alley", "Early morning for empty atmospheric photography", "The stone cobbles are original Victorian \u2014 same ones in the films"], "avoid": "Noon Saturday", "savings": "Free. HP tours charge \u00a325. Saving: \u00a325", "transport": "London Bridge (5 min walk)", "transport_cost": "Zone 1", "openHours": "Mon\u2013Sat from 8am", "rating": "\u2605\u2605\u2605\u2605\u2605"}], "icon": "\u26a1", "price": "\u00a314.99"}};
+
+// ── AUTH ───────────────────────────────────────────────────────────────────
+// Keys: prefix LL + year + map initials. Real implementation would validate server-side.
+const VALID_KEYS = ['LLLM2024','LONDONLENS','LIFETIME2024','LLPREMIUM','DEMO2024'];
+let isDemo = false;
+let memberEmail = '';
+
+function checkKey() {
+  const val = document.getElementById('gate-key').value.trim().toUpperCase();
+  if (VALID_KEYS.includes(val) || val === 'LONDONLENS2024') {
+    unlockApp(false, val);
+  } else {
+    const err = document.getElementById('gate-error');
+    err.style.display = 'block';
+    err.textContent = 'Incorrect code. Try: LONDONLENS (demo key) or check your welcome email.';
+    document.getElementById('gate-key').style.borderColor = '#dc2626';
+  }
+}
+
+function demoAccess() { unlockApp(true); }
+
+function unlockApp(demo, key) {
+  isDemo = demo;
+  localStorage.setItem('ll_auth', demo ? 'demo' : (key || 'member'));
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  if (demo) {
+    document.getElementById('member-chip').textContent = '👀 Demo Mode';
+    document.getElementById('member-chip').style.color = '#f59e0b';
+  }
+  initApp();
+}
+
+function logout() {
+  localStorage.removeItem('ll_auth');
+  location.reload();
+}
+
+// Check persistent login
+(function() {
+  const stored = localStorage.getItem('ll_auth');
+  if (stored) unlockApp(stored === 'demo', stored);
+  else {
+    document.getElementById('gate-key').addEventListener('keydown', e => {
+      if (e.key === 'Enter') checkKey();
+    });
+  }
+})();
+
+// ── APP STATE ──────────────────────────────────────────────────────────────
+let currentMap = null;
+let currentStops = [];
+let activeStop = null;
+let visited = {};
+let leafletMap = null;
+let markers = [];
+let polyline = null;
+let polylineGlow = null;
+
+// ── INIT APP ───────────────────────────────────────────────────────────────
+function initApp() {
+  buildMapSelector();
+  leafletMap = L.map('map', {center:[51.509,-.118],zoom:13,zoomControl:true});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+    attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:19
+  }).addTo(leafletMap);
+  addPopupStyle();
+  selectMap('pubs');
+}
+
+// ── MAP SELECTOR ───────────────────────────────────────────────────────────
+function buildMapSelector() {
+  const sel = document.getElementById('map-selector');
+  Object.entries(ALL_MAPS).forEach(([id,m]) => {
+    const btn = document.createElement('button');
+    btn.className = 'map-tab';
+    btn.id = 'tab-'+id;
+    btn.onclick = () => selectMap(id);
+    btn.innerHTML = (m.emoji||'📍') + ' ' + (m.title||id).split(' ').slice(0,3).join(' ');
+    sel.appendChild(btn);
+  });
+}
+
+// ── SELECT MAP ─────────────────────────────────────────────────────────────
+function selectMap(id) {
+  currentMap = ALL_MAPS[id];
+  currentStops = ALL_STOPS[id] || [];
+  activeStop = null;
+  if (!visited[id]) visited[id] = new Set();
+
+  // Tab
+  document.querySelectorAll('.map-tab').forEach(t => t.classList.toggle('active', t.id === 'tab-'+id));
+
+  // CSS vars
+  const mc = currentMap.color || '#c9a84c';
+  const ac = currentMap.accent || '#e2c97e';
+  document.documentElement.style.setProperty('--map-color', mc);
+  document.documentElement.style.setProperty('--map-accent', ac);
+
+  updateHero();
+  updateSavings();
+  buildStopList();
+  updateProgress();
+  renderMap();
+  updatePDF(id);
+  removePanels();
+
+  // First stop after delay
+  if (currentStops.length) setTimeout(() => selectStop(currentStops[0]), 600);
+}
+
+// ── HERO ───────────────────────────────────────────────────────────────────
+function updateHero() {
+  const m = currentMap;
+  document.getElementById('map-hero').style.cssText +=
+    `;background:linear-gradient(160deg,${m.color} 0%,${shadeColor(m.color,20)} 100%)`;
+  document.getElementById('hero-glow').style.cssText =
+    `position:absolute;bottom:-40px;right:-40px;width:160px;height:160px;border-radius:50%;
+     background:radial-gradient(circle,${m.accent}22 0%,transparent 70%);pointer-events:none;`;
+  document.getElementById('hero-eyebrow').textContent = (m.emoji||'📍') + ' Members Only · ' + (m.id||'').replace(/_/g,' ').toUpperCase();
+  document.getElementById('hero-title').innerHTML = m.title.replace('London','<em>London</em>');
+  document.getElementById('hero-sub').textContent = m.subtitle || '';
+  const stops = currentStops;
+  const dur = (m.subtitle||'').match(/(\d[\.\d]* [Hh]ours?)/)?.[1] || (stops.length > 6 ? '3 hours' : '2 hours');
+  document.getElementById('hero-stats').innerHTML = `
+    <div class="map-stat"><div class="map-stat-v">${stops.length}</div><div class="map-stat-l">Stops</div></div>
+    <div class="map-stat"><div class="map-stat-v">${dur}</div><div class="map-stat-l">Duration</div></div>
+    <div class="map-stat"><div class="map-stat-v" style="color:${m.accent}">${m.guide_price||'£12.99'}</div><div class="map-stat-l">Your Price</div></div>
+  `;
+}
+
+// ── SAVINGS ────────────────────────────────────────────────────────────────
+function updateSavings() {
+  const m = currentMap;
+  document.getElementById('savings-strip').innerHTML = `
+    <div class="saving-cell"><div class="saving-val" style="color:var(--muted)">${m.guide_price||'£12.99'}</div><div class="saving-label">Your Price</div></div>
+    <div class="saving-cell"><div class="saving-val" style="color:var(--muted)">${m.retail_value||'£180'}</div><div class="saving-label">Tour Value</div></div>
+    <div class="saving-cell"><div class="saving-val" style="color:#166534">💰 ${m.savings||'£167'}</div><div class="saving-label">You Save</div></div>
+  `;
+}
+
+// ── STOP LIST ──────────────────────────────────────────────────────────────
+function buildStopList() {
+  const list = document.getElementById('stop-list');
+  const mapId = currentMap.id;
+  list.innerHTML = currentStops.map((s,i) => `
+    <div class="stop-item ${visited[mapId]?.has(s.num)?'visited':''}" data-num="${s.num}" onclick="selectStop(ALL_STOPS['${mapId}'][${i}])">
+      <div class="stop-num" style="background:${s.color}22;color:${s.color};">${s.num}</div>
+      <div class="stop-emoji">${s.emoji}</div>
+      <div class="stop-meta">
+        <div class="stop-name">${s.name}</div>
+        <div class="stop-area">${s.area}</div>
+        <div class="stop-pills">
+          ${s.walkFrom && s.walkFrom!=='Start here' ? `<span class="spill spill-walk">🚶 ${s.walkFrom}</span>` : `<span class="spill spill-free">▶ START</span>`}
+          ${(s.cost||'').toLowerCase().includes('free') ? `<span class="spill spill-free">Free</span>` : `<span class="spill spill-pay">${s.cost||'£'}</span>`}
+          ${s.savings ? `<span class="spill spill-save">Save ${(s.savings||'').split(' ').slice(-1)[0]}</span>` : ''}
+        </div>
+      </div>
+      <div class="stop-check ${visited[mapId]?.has(s.num)?'done':''}" id="chk-${s.num}" onclick="toggleVisited(event,'${mapId}',${s.num})">✓</div>
+    </div>
+  `).join('');
+  // legend
+  const lb = document.getElementById('legend-body');
+  lb.innerHTML = currentStops.map(s => `<div class="ml-item"><div class="ml-dot" style="background:${s.color}"></div><span><b>${s.num}.</b> ${s.name}</span></div>`).join('');
+  document.getElementById('legend-title').textContent = currentMap.emoji + ' ' + currentMap.title;
+}
+
+// ── MAP RENDER ─────────────────────────────────────────────────────────────
+function renderMap() {
+  markers.forEach(m => m.remove());
+  markers = [];
+  if (polyline) { polyline.remove(); polyline = null; }
+  if (polylineGlow) { polylineGlow.remove(); polylineGlow = null; }
+
+  const pts = currentStops.map(s => [s.lat, s.lng]);
+  if (pts.length < 2) { if (pts.length) leafletMap.flyTo(pts[0], 14, {animate:true,duration:.8}); return; }
+
+  const mc = currentMap.color;
+  polylineGlow = L.polyline(pts, {color:currentMap.accent, weight:8, opacity:.18}).addTo(leafletMap);
+  polyline = L.polyline(pts, {color:mc, weight:2.5, opacity:.75, dashArray:'7 4'}).addTo(leafletMap);
+
+  // START / END labels
+  addFloatLabel(pts[0], '▶ START', '#166534', [0, -22]);
+  addFloatLabel(pts[pts.length-1], '🏁 END', '#0369a1', [0, 16]);
+
+  currentStops.forEach((s, i) => {
+    const icon = L.divIcon({
+      className:'',
+      html:`<div class="custom-marker ${visited[currentMap.id]?.has(s.num)?'visited-marker':''}" id="cm-${s.num}" style="background:${s.color};">${s.num}</div>`,
+      iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-20],
+    });
+    const mk = L.marker([s.lat,s.lng],{icon})
+      .addTo(leafletMap)
+      .bindPopup(buildPopup(s,currentMap),{maxWidth:270,className:'ll-popup'});
+    mk.on('click', () => selectStop(s));
+    markers.push(mk);
+  });
+
+  const bounds = L.latLngBounds(pts).pad(.1);
+  leafletMap.flyToBounds(bounds,{animate:true,duration:.8});
+}
+
+function addFloatLabel(latlng, text, bg, anchor) {
+  const icon = L.divIcon({
+    className:'',
+    html:`<div style="background:${bg};color:white;font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3);">${text}</div>`,
+    iconAnchor:anchor,
+  });
+  L.marker(latlng,{icon}).addTo(leafletMap);
+}
+
+// ── POPUP ──────────────────────────────────────────────────────────────────
+function buildPopup(s, m) {
+  const costBadge = (s.cost||'').toLowerCase().includes('free')
+    ? `<span style="background:#dcfce7;color:#166534;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;">Free entry</span>`
+    : `<span style="background:#fef9c3;color:#854d0e;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;">${s.cost}</span>`;
+  const sv = s.savings ? `<div style="background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);border-radius:6px;padding:6px 8px;margin-bottom:8px;font-size:11.5px;color:#8a6820;"><b>💰 Saving:</b> ${s.savings}</div>` : '';
+  return `<div style="font-family:'Outfit',sans-serif;min-width:220px;">
+    <div style="background:${s.color};color:white;padding:9px 11px;margin:-10px -12px 10px;border-radius:6px 6px 0 0;">
+      <div style="font-size:20px;margin-bottom:3px;">${s.emoji}</div>
+      <div style="font-family:'Playfair Display',serif;font-size:14px;font-weight:700;">${s.name}</div>
+      <div style="font-size:11px;opacity:.75;">${s.area}</div>
+    </div>
+    ${sv}
+    <div style="font-size:12px;color:#374151;line-height:1.55;margin-bottom:9px;">${(s.tip||'').substring(0,120)}…</div>
+    <div style="display:flex;gap:6px;font-size:11px;color:#6b7280;margin-bottom:5px;align-items:center;">🕐 ${s.openHours||'Check locally'}</div>
+    <div style="display:flex;gap:6px;font-size:11px;color:#6b7280;margin-bottom:5px;align-items:center;">🚇 ${s.transport||'Central London tube'} · <b style="color:#166534">${s.transport_cost||'Zone 1'}</b></div>
+    <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+      <span style="background:#e0f2fe;color:#0369a1;font-size:10px;font-weight:600;padding:2px 8px;border-radius:8px;">🚶 ${s.walkFrom||'Check route'}</span>
+      ${costBadge}
+      <span style="color:#c9a84c;font-size:12px;">${s.rating||'★★★★☆'}</span>
+    </div>
+  </div>`;
+}
+
+// ── SELECT STOP ────────────────────────────────────────────────────────────
+function selectStop(s) {
+  activeStop = s;
+  leafletMap.flyTo([s.lat,s.lng],16,{animate:true,duration:.7});
+  document.querySelectorAll('.stop-item').forEach(el => el.classList.toggle('active', +el.dataset.num===s.num));
+  document.querySelectorAll('.custom-marker').forEach(el => el.classList.remove('active-marker'));
+  const cm = document.getElementById('cm-'+s.num);
+  if (cm) cm.classList.add('active-marker');
+  const item = document.querySelector('.stop-item[data-num="'+s.num+'"]');
+  if (item) { item.scrollIntoView({behavior:'smooth',block:'nearest'}); showDetail(item,s); }
+}
+
+// ── DETAIL PANEL ───────────────────────────────────────────────────────────
+let activeTab = 'tip';
+function removePanels() { document.querySelectorAll('.detail-panel').forEach(el=>el.remove()); }
+
+function showDetail(item, s) {
+  removePanels();
+  const panel = document.createElement('div');
+  panel.className = 'detail-panel open';
+  panel.innerHTML = buildDetail(s, activeTab);
+  item.after(panel);
+  panel.querySelectorAll('.dtab').forEach(t => {
+    t.addEventListener('click', () => {
+      activeTab = t.dataset.tab;
+      panel.querySelector('.detail-body').innerHTML = detailBody(s, activeTab);
+      panel.querySelectorAll('.dtab').forEach(dt => dt.classList.toggle('active', dt.dataset.tab===activeTab));
+    });
+  });
+  panel.querySelector('.detail-close').addEventListener('click', () => {
+    panel.remove(); activeStop=null;
+    document.querySelectorAll('.stop-item').forEach(el=>el.classList.remove('active'));
+    document.querySelectorAll('.custom-marker').forEach(el=>el.classList.remove('active-marker'));
+  });
+}
+
+function buildDetail(s, tab) {
+  return `
+    <div class="detail-header">
+      <div><div class="detail-name">${s.emoji}  ${s.name}</div><div style="font-size:10.5px;color:var(--muted)">${s.area}</div></div>
+      <button class="detail-close">✕</button>
+    </div>
+    <div class="detail-tabs">
+      <button class="dtab ${tab==='tip'?'active':''}" data-tab="tip">Tip</button>
+      <button class="dtab ${tab==='save'?'active':''}" data-tab="save">💰 Saving</button>
+      <button class="dtab ${tab==='transport'?'active':''}" data-tab="transport">🚇 Transport</button>
+      <button class="dtab ${tab==='do'?'active':''}" data-tab="do">Do</button>
+    </div>
+    <div class="detail-body">${detailBody(s,tab)}</div>
+  `;
+}
+
+function detailBody(s, tab) {
+  if (tab==='tip') return `
+    <div class="tip-block"><div class="tip-lbl">Hidden Tip</div><div class="tip-txt">${s.tip}</div></div>
+    <div class="irow"><span class="ilbl">⏰ Best</span><span class="ival">${s.bestTime||'Anytime'}</span></div>
+    <div class="irow"><span class="ilbl">⭐ Rating</span><span class="ival" style="color:var(--gold)">${s.rating||'★★★★☆'}</span></div>
+    <div class="irow"><span class="ilbl">💷 Cost</span><span class="ival">${s.cost||'Free'}</span></div>
+  `;
+  if (tab==='save') {
+    const sv = s.savings||'See below for savings details';
+    return `
+      <div class="save-block">
+        <div class="save-item"><div class="save-val" style="color:var(--muted)">${(s.cost||'Free').split(' ')[0]}</div><div class="save-lbl">Entry Cost</div></div>
+        <div class="save-item"><div class="save-val" style="color:var(--muted)">${currentMap.retail_value}</div><div class="save-lbl">Guided Tour Value</div></div>
+        <div class="save-item"><div class="save-val" style="color:#166534">${currentMap.savings}</div><div class="save-lbl">Total Saving</div></div>
+      </div>
+      <div class="tip-block" style="background:rgba(22,101,52,.06);border-color:rgba(22,101,52,.2);">
+        <div class="tip-lbl" style="color:#166534">SAVINGS DETAIL</div>
+        <div class="tip-txt">${sv}</div>
+      </div>
+      <div class="irow"><span class="ilbl">Guide price</span><span class="ival" style="font-weight:700">${currentMap.guide_price}</span></div>
+      <div class="irow"><span class="ilbl">Tour value</span><span class="ival">${currentMap.retail_value}</span></div>
+      <div class="irow"><span class="ilbl">You save</span><span class="ival" style="color:#166534;font-weight:700">${currentMap.savings}</span></div>
+    `;
+  }
+  if (tab==='transport') return `
+    <div class="transport-block">
+      <div class="trans-lbl">🚇 Cheapest Route from Central London</div>
+      <div class="trans-row">📍 <b>${s.transport||'See London tube map'}</b></div>
+      <div class="trans-row">💷 Cost: <b style="color:#166534">${s.transport_cost||'Zone 1 — daily cap'}</b></div>
+    </div>
+    <div class="irow"><span class="ilbl">Daily cap</span><span class="ival">Zone 1: £8.10 · Zone 1-2: £10.10</span></div>
+    <div class="irow"><span class="ilbl">TfL app</span><span class="ival">Download for live departures</span></div>
+    <div class="irow"><span class="ilbl">Oyster/Card</span><span class="ival">Contactless auto-caps daily — never overpay</span></div>
+    <div class="irow"><span class="ilbl">Walking</span><span class="ival">Most stops are walkable from nearby — use this map!</span></div>
+  `;
+  if (tab==='do') return `
+    <ul class="do-list">${(s.do||[]).map(d=>`<li>${d}</li>`).join('')}</ul>
+    <div class="avoid-b"><div class="avoid-l">Avoid</div><div style="font-size:12px;color:var(--ink)">${s.avoid||'Nothing specific'}</div></div>
+    <div class="irow"><span class="ilbl">⏰ Hours</span><span class="ival">${s.openHours||'Check locally'}</span></div>
+  `;
+}
+
+// ── VISITED ────────────────────────────────────────────────────────────────
+function toggleVisited(e, mapId, num) {
+  e.stopPropagation();
+  if (!visited[mapId]) visited[mapId] = new Set();
+  const chk = document.getElementById('chk-'+num);
+  const item = document.querySelector('.stop-item[data-num="'+num+'"]');
+  const cm = document.getElementById('cm-'+num);
+  if (visited[mapId].has(num)) {
+    visited[mapId].delete(num);
+    chk.classList.remove('done');
+    item.classList.remove('visited');
+    if (cm) cm.classList.remove('visited-marker');
+  } else {
+    visited[mapId].add(num);
+    chk.classList.add('done');
+    item.classList.add('visited');
+    if (cm) { cm.classList.add('visited-marker'); cm.style.background = currentMap.accent||'#c9a84c'; }
+    showToast('Stop '+num+' marked visited ✓');
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const mapId = currentMap?.id;
+  const total = currentStops.length;
+  const done = visited[mapId]?.size || 0;
+  const pct = total ? (done/total*100) : 0;
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-fill').style.background = `linear-gradient(90deg,${currentMap.color},${currentMap.accent})`;
+  document.getElementById('prog-text').textContent = `${done} of ${total} visited`;
+}
+
+// ── PDF LINK ───────────────────────────────────────────────────────────────
+function updatePDF(id) {
+  const btn = document.getElementById('pdf-dl-btn');
+  const filename = `ll-map-${id}.pdf`;
+  if (isDemo) {
+    btn.href = '#';
+    btn.onclick = (e) => { e.preventDefault(); showToast('PDF download requires full membership'); };
+  } else {
+    btn.href = filename;
+    btn.download = filename;
+    btn.onclick = null;
+  }
+}
+
+// ── KEYBOARD NAV ───────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (!activeStop || !currentStops.length) return;
+  const idx = currentStops.findIndex(s => s.num===activeStop.num);
+  if (e.key==='ArrowRight' && idx<currentStops.length-1) selectStop(currentStops[idx+1]);
+  if (e.key==='ArrowLeft'  && idx>0)                     selectStop(currentStops[idx-1]);
+});
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+let toastT;
+function showToast(msg) {
+  const ex = document.querySelector('.map-tip');
+  if (ex) ex.remove();
+  clearTimeout(toastT);
+  const t = document.createElement('div');
+  t.className='map-tip'; t.textContent=msg;
+  document.getElementById('map-wrap').appendChild(t);
+  toastT = setTimeout(()=>t.remove(), 3000);
+}
+
+// ── POPUP STYLES ───────────────────────────────────────────────────────────
+function addPopupStyle() {
+  const s = document.createElement('style');
+  s.textContent=`.ll-popup .leaflet-popup-content-wrapper{border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.2);padding:10px 12px;border:1px solid #e2ddd5;}.ll-popup .leaflet-popup-content{margin:0;font-size:13px;}.ll-popup .leaflet-popup-tip-container{display:none;}.leaflet-control-zoom{border:1px solid #e2ddd5!important;}.leaflet-control-zoom a{color:#0d1b2a!important;font-weight:700!important;}`;
+  document.head.appendChild(s);
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function shadeColor(hex, pct) {
+  try {
+    const n = parseInt(hex.slice(1),16);
+    const r = Math.min(255, (n>>16)+pct), g=Math.min(255,((n>>8)&0xff)+pct), b=Math.min(255,(n&0xff)+pct);
+    return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+  } catch(e) { return hex; }
+}
+</script>
+</body>
+</html>
