@@ -1,495 +1,743 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>London Lens — Your Guide to Living in London</title>
-  <meta name="description" content="Digital resources, expert consultations and tools for newcomers relocating to London from Bangladesh, India, Pakistan, Nigeria and beyond."/>
-  <meta property="og:title" content="London Lens — Your Guide to Living in London"/>
-  <meta property="og:description" content="Guides, consultations and tools for new Londoners."/>
-  <meta property="og:type" content="website"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>London Lens — Your Guide to Living in London</title>
+<meta name="description" content="Interactive walking maps, digital guides and expert consultations for newcomers relocating to London."/>
+<meta property="og:title" content="London Lens — Premium London Maps & Guides"/>
+<meta property="og:description" content="11 exclusive London walking maps from £0.99. Pubs, museums, Harry Potter, Shakespeare and more."/>
+<meta property="og:type" content="website"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<!-- Stripe JS -->
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+/* ═══════════════════════════════════════════════════
+   RESET & TOKENS
+═══════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0d1b2a;--navy2:#152436;--navy3:#1e3448;
+  --gold:#c9a84c;--gold2:#e2c97e;--gold3:#f5e9c2;
+  --cream:#f9f6f0;--cream2:#f0ebe0;
+  --ink:#1a1f2e;--muted:#6b7280;--border:#e2ddd5;
+  --white:#fff;--green:#166534;--red:#991b1b;
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'Outfit',system-ui,sans-serif;
+  --r:10px;--r-lg:16px;
+  --sh:0 4px 24px rgba(13,27,42,.10);
+  --sh-lg:0 12px 48px rgba(13,27,42,.18);
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--cream);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+img{max-width:100%;display:block;}
+a{text-decoration:none;}
+button{font-family:var(--sans);}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:var(--gold);border-radius:3px;}
 
-    :root {
-      --navy:   #0d1b2a;
-      --navy2:  #152436;
-      --gold:   #c9a84c;
-      --gold2:  #e2c97e;
-      --cream:  #f9f6f0;
-      --cream2: #f0ebe0;
-      --ink:    #1a1f2e;
-      --muted:  #6b7280;
-      --border: #e2ddd5;
-      --serif:  'Playfair Display', Georgia, serif;
-      --sans:   'Outfit', system-ui, sans-serif;
-    }
+/* ═══════════════════════════════════════════════════
+   LAYOUT HELPERS
+═══════════════════════════════════════════════════ */
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px;}
+.wrap-sm{max-width:720px;margin:0 auto;padding:0 20px;}
+.section{padding:64px 0;}
+.section-sm{padding:44px 0;}
 
-    html { scroll-behavior: smooth; }
+/* ═══════════════════════════════════════════════════
+   TYPOGRAPHY
+═══════════════════════════════════════════════════ */
+.eyebrow{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px;display:block;}
+.section-title{font-family:var(--serif);font-size:clamp(24px,4vw,34px);font-weight:700;color:var(--navy);line-height:1.2;margin-bottom:12px;}
+.section-sub{color:var(--muted);font-size:15px;line-height:1.7;max-width:500px;}
 
-    body {
-      font-family: var(--sans);
-      background: var(--cream);
-      color: var(--ink);
-      -webkit-font-smoothing: antialiased;
-    }
+/* ═══════════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════════ */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 24px;border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;letter-spacing:.3px;text-decoration:none;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{background:var(--gold2);transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.35);}
+.btn-navy{background:var(--navy);color:var(--gold);border:1px solid rgba(201,168,76,.3);}
+.btn-navy:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn-outline-gold{background:transparent;color:var(--gold);border:1.5px solid rgba(201,168,76,.5);}
+.btn-outline-gold:hover{background:rgba(201,168,76,.08);border-color:var(--gold);}
+.btn-outline-white{background:transparent;color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.25);}
+.btn-outline-white:hover{border-color:var(--gold);color:var(--gold);}
+.btn-sm{padding:7px 16px;font-size:13px;}
+.btn-lg{padding:14px 32px;font-size:15px;}
+.btn-full{width:100%;justify-content:center;}
 
-    /* ── NAV ── */
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      background: var(--navy);
-      border-bottom: 1px solid rgba(201,168,76,.15);
-      height: 60px;
-      display: flex; align-items: center;
-    }
-    .nav-inner {
-      max-width: 1100px; margin: 0 auto; padding: 0 24px;
-      width: 100%;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .logo {
-      font-family: var(--serif);
-      color: var(--gold);
-      font-size: 20px; font-weight: 700;
-      display: flex; align-items: center; gap: 9px;
-      text-decoration: none;
-    }
-    .logo-mark {
-      width: 30px; height: 30px;
-      background: rgba(201,168,76,.15);
-      border-radius: 7px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .nav-links { display: flex; align-items: center; gap: 6px; }
-    .nav-a {
-      color: rgba(255,255,255,.6);
-      font-size: 14px; font-weight: 500;
-      text-decoration: none;
-      padding: 6px 12px; border-radius: 6px;
-      transition: color .2s, background .2s;
-    }
-    .nav-a:hover { color: var(--gold); background: rgba(201,168,76,.08); }
-    .nav-cta {
-      background: var(--gold); color: var(--navy);
-      font-size: 13.5px; font-weight: 600;
-      padding: 8px 18px; border-radius: 7px;
-      text-decoration: none;
-      transition: opacity .2s, transform .2s;
-    }
-    .nav-cta:hover { opacity: .88; transform: translateY(-1px); }
+/* ═══════════════════════════════════════════════════
+   BADGES & PILLS
+═══════════════════════════════════════════════════ */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;}
+.badge-gold{background:rgba(201,168,76,.14);color:#7a5e18;}
+.badge-navy{background:var(--navy);color:var(--gold);}
+.badge-green{background:#dcfce7;color:#166534;}
 
-    /* ── HERO ── */
-    .hero {
-      background: var(--navy);
-      position: relative; overflow: hidden;
-      padding: 96px 24px 80px;
-      text-align: center;
-    }
-    .hero-glow {
-      position: absolute; bottom: -180px; left: 50%;
-      transform: translateX(-50%);
-      width: 800px; height: 400px;
-      background: radial-gradient(ellipse, rgba(201,168,76,.13) 0%, transparent 68%);
-      pointer-events: none;
-    }
-    .hero-skyline {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      height: 110px; overflow: hidden; pointer-events: none;
-      opacity: 1;
-    }
-    .skyline-svg { display: block; }
-    .hero-inner {
-      position: relative; z-index: 2;
-      max-width: 700px; margin: 0 auto;
-    }
-    .pill-eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(201,168,76,.1);
-      border: 1px solid rgba(201,168,76,.22);
-      color: var(--gold2);
-      font-size: 11.5px; font-weight: 600;
-      letter-spacing: 1.8px; text-transform: uppercase;
-      padding: 6px 16px; border-radius: 20px;
-      margin-bottom: 28px;
-    }
-    .pill-dot {
-      width: 5px; height: 5px; border-radius: 50%;
-      background: var(--gold);
-    }
-    .hero h1 {
-      font-family: var(--serif);
-      color: #fff;
-      font-size: clamp(36px, 5.5vw, 62px);
-      font-weight: 700; line-height: 1.12;
-      margin-bottom: 20px;
-    }
-    .hero h1 em { color: var(--gold); font-style: italic; }
-    .hero-sub {
-      color: rgba(255,255,255,.58);
-      font-size: 17px; line-height: 1.75;
-      margin-bottom: 40px;
-    }
-    .hero-btns {
-      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
-      margin-bottom: 60px;
-    }
-    .btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 13px 28px; border-radius: 8px;
-      font-family: var(--sans); font-size: 15px; font-weight: 600;
-      text-decoration: none; cursor: pointer; border: none;
-      transition: all .2s; letter-spacing: .2px;
-    }
-    .btn-gold { background: var(--gold); color: var(--navy); }
-    .btn-gold:hover { background: var(--gold2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,.3); }
-    .btn-outline {
-      background: transparent; color: rgba(255,255,255,.8);
-      border: 1.5px solid rgba(255,255,255,.22);
-    }
-    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+/* ═══════════════════════════════════════════════════
+   NAVBAR — MOBILE FIRST
+═══════════════════════════════════════════════════ */
+.navbar{
+  position:sticky;top:0;z-index:900;
+  background:var(--navy);
+  border-bottom:1px solid rgba(201,168,76,.15);
+}
+.nav-inner{
+  display:flex;align-items:center;justify-content:space-between;
+  height:60px;padding:0 16px;max-width:1100px;margin:0 auto;
+}
+.nav-logo{
+  font-family:var(--serif);color:var(--gold);font-size:19px;font-weight:700;
+  display:flex;align-items:center;gap:9px;text-decoration:none;flex-shrink:0;
+}
+.nav-logo-mark{
+  width:30px;height:30px;background:rgba(201,168,76,.15);border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+}
 
-    .trust-row {
-      display: flex; gap: 28px; justify-content: center; flex-wrap: wrap;
-      padding-top: 28px;
-      border-top: 1px solid rgba(255,255,255,.07);
-    }
-    .trust-item {
-      display: flex; align-items: center; gap: 7px;
-      color: rgba(255,255,255,.45); font-size: 13px;
-    }
-    .trust-item span:first-child { color: var(--gold); font-size: 15px; }
+/* Hamburger */
+.nav-burger{
+  display:flex;flex-direction:column;gap:5px;cursor:pointer;
+  background:none;border:none;padding:6px;border-radius:6px;
+  transition:background .2s;
+}
+.nav-burger:hover{background:rgba(255,255,255,.08);}
+.nav-burger span{
+  display:block;width:22px;height:2px;background:rgba(255,255,255,.75);
+  border-radius:2px;transition:all .3s;
+}
+.nav-burger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.nav-burger.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+.nav-burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
 
-    /* ── SECTIONS ── */
-    .section { padding: 76px 24px; }
-    .section-sm { padding: 52px 24px; }
-    .wrap { max-width: 1100px; margin: 0 auto; }
-    .wrap-sm { max-width: 700px; margin: 0 auto; }
+/* Mobile drawer */
+.nav-drawer{
+  display:none;flex-direction:column;
+  background:var(--navy2);border-top:1px solid rgba(255,255,255,.07);
+  padding:8px 0 16px;
+}
+.nav-drawer.open{display:flex;}
+.nav-drawer a,.nav-drawer button{
+  display:block;width:100%;text-align:left;
+  color:rgba(255,255,255,.7);font-size:15px;font-weight:500;
+  padding:12px 20px;border:none;background:none;cursor:pointer;
+  text-decoration:none;transition:color .2s,background .2s;
+}
+.nav-drawer a:hover,.nav-drawer button:hover{color:var(--gold);background:rgba(201,168,76,.06);}
+.nav-drawer .drawer-cta{
+  margin:10px 20px 0;background:var(--gold);color:var(--navy);
+  border-radius:8px;font-weight:700;text-align:center;padding:12px 20px;
+}
+.nav-drawer .drawer-cta:hover{background:var(--gold2);}
 
-    .eyebrow {
-      font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
-      color: var(--gold); font-weight: 600; margin-bottom: 10px;
-    }
-    h2.section-title {
-      font-family: var(--serif); font-size: clamp(26px, 3.5vw, 36px);
-      font-weight: 700; color: var(--navy); line-height: 1.2; margin-bottom: 12px;
-    }
-    .section-sub {
-      color: var(--muted); font-size: 16px; line-height: 1.7; max-width: 500px;
-    }
+/* Desktop nav links — hidden on mobile */
+.nav-links-desktop{display:none;align-items:center;gap:4px;}
+.nav-links-desktop a{
+  color:rgba(255,255,255,.65);font-size:13.5px;font-weight:500;
+  padding:6px 11px;border-radius:6px;text-decoration:none;transition:all .2s;
+}
+.nav-links-desktop a:hover{color:var(--gold);background:rgba(201,168,76,.08);}
+.nav-cta-desktop{
+  background:var(--gold);color:var(--navy);
+  font-size:13px;font-weight:700;padding:8px 18px;
+  border-radius:7px;text-decoration:none;transition:all .2s;white-space:nowrap;
+}
+.nav-cta-desktop:hover{background:var(--gold2);}
+.nav-cart-btn{
+  position:relative;cursor:pointer;padding:7px 14px;border-radius:8px;
+  background:rgba(201,168,76,.12);color:var(--gold);
+  font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:5px;
+  border:1px solid rgba(201,168,76,.25);transition:all .2s;white-space:nowrap;
+}
+.nav-cart-btn:hover{background:rgba(201,168,76,.2);}
+.cart-bubble{
+  position:absolute;top:-6px;right:-6px;
+  background:var(--gold);color:var(--navy);
+  width:18px;height:18px;border-radius:50%;
+  font-size:10px;font-weight:800;
+  display:none;align-items:center;justify-content:center;
+}
+.cart-bubble.show{display:flex;}
 
-    /* ── CATEGORIES ── */
-    .cats { background: #fff; border-bottom: 1px solid var(--border); }
-    .cat-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
-    }
-    .cat-card {
-      padding: 22px 16px; border-radius: 12px;
-      background: var(--cream); border: 1px solid var(--border);
-      text-align: center; cursor: pointer; text-decoration: none;
-      transition: border-color .2s, transform .2s, box-shadow .2s;
-      display: block;
-    }
-    .cat-card:hover {
-      border-color: var(--gold); transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(201,168,76,.12);
-    }
-    .cat-icon { font-size: 30px; margin-bottom: 8px; }
-    .cat-name { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
-    .cat-count { font-size: 12px; color: var(--muted); }
+@media(min-width:768px){
+  .nav-burger{display:none;}
+  .nav-links-desktop{display:flex;}
+  .nav-inner{padding:0 24px;}
+}
 
-    /* ── PRODUCTS ── */
-    .products-bg { background: var(--cream); }
-    .product-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
-    }
-    .product-card {
-      background: #fff; border-radius: 14px; border: 1px solid var(--border);
-      overflow: hidden; text-decoration: none; display: block;
-      transition: transform .22s, box-shadow .22s;
-    }
-    .product-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(13,27,42,.12); }
-    .product-thumb {
-      height: 160px; display: flex; align-items: center; justify-content: center;
-      font-size: 48px; position: relative;
-    }
-    .badge {
-      display: inline-flex; align-items: center;
-      padding: 3px 9px; border-radius: 20px;
-      font-size: 10.5px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase;
-    }
-    .badge-navy { background: var(--navy); color: var(--gold); }
-    .badge-gold { background: rgba(201,168,76,.14); color: #7a5e18; }
-    .abs-badge { position: absolute; top: 10px; right: 10px; }
-    .product-body { padding: 16px 18px 20px; }
-    .product-title {
-      font-family: var(--serif); font-size: 16px; font-weight: 600;
-      color: var(--navy); margin-bottom: 5px; line-height: 1.3;
-    }
-    .product-desc { font-size: 13px; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
-    .product-foot { display: flex; align-items: center; justify-content: space-between; }
-    .price { font-size: 20px; font-weight: 700; color: var(--navy); }
-    .price-old { font-size: 13px; color: var(--muted); text-decoration: line-through; margin-right: 4px; }
-    .btn-add {
-      background: var(--navy); color: var(--gold);
-      border: none; border-radius: 7px;
-      padding: 7px 14px; font-size: 13px; font-weight: 600;
-      cursor: pointer; font-family: var(--sans);
-      transition: background .2s;
-    }
-    .btn-add:hover { background: #1e3448; }
+/* ═══════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════ */
+#toast{
+  position:fixed;bottom:20px;right:20px;z-index:9999;
+  background:var(--navy);color:var(--white);
+  padding:12px 18px;border-radius:10px;
+  border-left:4px solid var(--gold);
+  font-size:14px;font-weight:500;
+  box-shadow:var(--sh-lg);
+  display:none;align-items:center;gap:10px;
+  max-width:calc(100vw - 40px);
+  animation:slideInRight .3s ease;
+}
+#toast.show{display:flex;}
+@keyframes slideInRight{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
-    /* ── CONSULT ── */
-    .consult-bg { background: #fff; }
-    .consult-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .consult-card {
-      border: 2px solid var(--border); border-radius: 14px;
-      padding: 28px 22px; position: relative;
-      transition: border-color .2s, box-shadow .2s;
-      background: #fff;
-    }
-    .consult-card:hover { border-color: var(--gold); box-shadow: 0 8px 28px rgba(201,168,76,.15); }
-    .consult-card.featured { border-color: var(--gold); }
-    .popular-tag {
-      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-      background: var(--gold); color: var(--navy);
-      font-size: 10.5px; font-weight: 700; letter-spacing: .5px;
-      padding: 3px 14px; border-radius: 12px; white-space: nowrap;
-    }
-    .tier-name { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
-    .tier-dur { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
-    .tier-price { font-size: 34px; font-weight: 700; color: var(--navy); margin-bottom: 20px; }
-    .tier-feats { list-style: none; }
-    .tier-feats li {
-      font-size: 13.5px; color: var(--ink); padding: 5px 0;
-      border-top: 1px solid var(--border);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .check { color: var(--gold); font-weight: 700; }
-    .consult-btn {
-      display: block; margin-top: 24px; text-align: center;
-      background: var(--navy); color: var(--gold);
-      border: none; width: 100%; padding: 12px;
-      border-radius: 8px; font-family: var(--sans);
-      font-size: 14px; font-weight: 600; cursor: pointer;
-      transition: background .2s;
-      text-decoration: none;
-    }
-    .consult-card.featured .consult-btn { background: var(--gold); color: var(--navy); }
-    .consult-btn:hover { opacity: .88; }
+/* ═══════════════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════════════ */
+.hero{
+  background:var(--navy);position:relative;overflow:hidden;
+  padding:60px 20px 56px;text-align:center;
+}
+.hero-glow{
+  position:absolute;bottom:-160px;left:50%;transform:translateX(-50%);
+  width:700px;height:380px;
+  background:radial-gradient(ellipse,rgba(201,168,76,.13) 0%,transparent 68%);
+  pointer-events:none;
+}
+.hero-skyline{position:absolute;bottom:0;left:0;right:0;height:90px;overflow:hidden;pointer-events:none;}
+.hero-inner{position:relative;z-index:2;max-width:680px;margin:0 auto;}
+.pill-eyebrow{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.22);
+  color:var(--gold2);font-size:11px;font-weight:700;
+  letter-spacing:1.8px;text-transform:uppercase;
+  padding:5px 14px;border-radius:20px;margin-bottom:22px;
+}
+.pill-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+.hero h1{
+  font-family:var(--serif);color:var(--white);
+  font-size:clamp(32px,6vw,60px);font-weight:700;line-height:1.12;margin-bottom:18px;
+}
+.hero h1 em{color:var(--gold);font-style:italic;}
+.hero-sub{color:rgba(255,255,255,.58);font-size:clamp(14px,2vw,17px);line-height:1.75;margin-bottom:32px;}
+.hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:44px;}
+.hero-trust{
+  display:flex;gap:16px;justify-content:center;flex-wrap:wrap;
+  border-top:1px solid rgba(255,255,255,.07);padding-top:24px;
+}
+.trust-item{display:flex;align-items:center;gap:7px;color:rgba(255,255,255,.45);font-size:12.5px;}
+.trust-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);flex-shrink:0;}
 
-    /* ── LEAD MAGNET ── */
-    .lead-bg { background: var(--cream2); }
-    .lead-box {
-      background: linear-gradient(135deg, var(--navy) 0%, #1e3448 100%);
-      border-radius: 20px; padding: 52px 40px;
-      text-align: center; position: relative; overflow: hidden;
-      border: 1px solid rgba(201,168,76,.15);
-    }
-    .lead-glow {
-      position: absolute; top: -80px; right: -80px;
-      width: 260px; height: 260px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(201,168,76,.1) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .lead-box h3 {
-      font-family: var(--serif); color: #fff; font-size: 26px;
-      margin-bottom: 10px; position: relative; z-index: 1;
-    }
-    .lead-box p { color: rgba(255,255,255,.58); font-size: 15px; margin-bottom: 28px; position: relative; z-index: 1; }
-    .lead-form { display: flex; gap: 10px; max-width: 420px; margin: 0 auto; position: relative; z-index: 1; }
-    .lead-input {
-      flex: 1; padding: 12px 16px; border-radius: 8px;
-      border: 1.5px solid rgba(255,255,255,.18);
-      background: rgba(255,255,255,.09); color: #fff;
-      font-family: var(--sans); font-size: 14px; outline: none;
-      transition: border-color .2s;
-    }
-    .lead-input::placeholder { color: rgba(255,255,255,.38); }
-    .lead-input:focus { border-color: var(--gold); }
-    .lead-small { font-size: 11px; color: rgba(255,255,255,.28); margin-top: 12px; position: relative; z-index: 1; }
+/* ═══════════════════════════════════════════════════
+   MAPS MARKETPLACE — TOP OF PAGE
+═══════════════════════════════════════════════════ */
+.maps-section{background:var(--navy);}
 
-    /* ── TESTIMONIALS ── */
-    .testi-bg { background: #fff; }
-    .testi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-    .testi-card {
-      background: var(--cream); border: 1px solid var(--border);
-      border-radius: 14px; padding: 22px;
-    }
-    .stars { color: var(--gold); font-size: 14px; margin-bottom: 10px; }
-    .testi-text {
-      font-size: 13.5px; color: var(--ink); line-height: 1.7;
-      font-style: italic; margin-bottom: 16px;
-    }
-    .testi-author { display: flex; align-items: center; gap: 10px; }
-    .testi-avatar {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--cream2); display: flex; align-items: center;
-      justify-content: center; font-size: 18px; flex-shrink: 0;
-    }
-    .testi-name { font-size: 13px; font-weight: 600; color: var(--navy); }
-    .testi-from { font-size: 11.5px; color: var(--muted); }
+.maps-hdr{text-align:center;margin-bottom:36px;}
+.maps-hdr .eyebrow{color:var(--gold2);}
+.maps-hdr .section-title{color:var(--white);}
+.maps-hdr .section-sub{color:rgba(255,255,255,.55);margin:0 auto;}
 
-    /* ── TOOLS PREVIEW ── */
-    .tools-bg { background: var(--cream); }
-    .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .tool-card {
-      background: #fff; border: 1px solid var(--border); border-radius: 14px;
-      padding: 26px 22px;
-    }
-    .tool-icon { font-size: 32px; margin-bottom: 12px; }
-    .tool-name { font-family: var(--serif); font-size: 17px; color: var(--navy); margin-bottom: 7px; }
-    .tool-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+/* Savings banner */
+.savings-banner{
+  background:rgba(22,101,52,.18);border:1px solid rgba(74,222,128,.25);
+  border-radius:12px;padding:12px 18px;margin-bottom:28px;
+  display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;
+}
+.savings-banner-icon{font-size:22px;flex-shrink:0;margin-top:1px;}
+.savings-banner-text{font-size:13.5px;color:rgba(255,255,255,.75);line-height:1.6;flex:1;}
+.savings-banner-text strong{color:#4ade80;}
 
-    /* ── BLOG ── */
-    .blog-bg { background: #fff; }
-    .blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .blog-card {
-      border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
-      background: #fff; text-decoration: none; display: block;
-      transition: transform .2s, box-shadow .2s;
-    }
-    .blog-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,27,42,.09); }
-    .blog-thumb {
-      height: 130px; background: var(--cream);
-      display: flex; align-items: center; justify-content: center; font-size: 44px;
-    }
-    .blog-body { padding: 16px 18px 20px; }
-    .blog-meta { font-size: 11.5px; color: var(--muted); margin-bottom: 7px; }
-    .blog-title {
-      font-family: var(--serif); font-size: 16px; font-weight: 600;
-      color: var(--navy); line-height: 1.35; margin-bottom: 7px;
-    }
-    .blog-excerpt { font-size: 13px; color: var(--muted); line-height: 1.55; }
+/* Bundle card */
+.bundle-card{
+  background:linear-gradient(135deg,#0f2035 0%,#1a3550 100%);
+  border:2px solid var(--gold);border-radius:16px;
+  padding:24px 20px;margin-bottom:32px;position:relative;overflow:hidden;
+}
+.bundle-card::before{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,.12) 0%,transparent 70%);
+}
+.bundle-ribbon{
+  position:absolute;top:0;right:0;
+  background:var(--gold);color:var(--navy);
+  font-size:10px;font-weight:800;letter-spacing:1px;
+  padding:5px 14px;border-radius:0 14px 0 10px;
+}
+.bundle-inner{display:grid;grid-template-columns:1fr;gap:20px;}
+.bundle-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);
+  color:var(--gold2);font-size:10.5px;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;padding:4px 12px;border-radius:10px;margin-bottom:10px;
+}
+.bundle-title{font-family:var(--serif);color:var(--white);font-size:clamp(18px,3vw,24px);font-weight:700;line-height:1.25;margin-bottom:8px;}
+.bundle-title em{color:var(--gold);font-style:italic;}
+.bundle-desc{color:rgba(255,255,255,.55);font-size:13px;line-height:1.65;margin-bottom:14px;}
+.bundle-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+.bundle-chip{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.65);font-size:11px;font-weight:500;
+  padding:3px 9px;border-radius:7px;
+}
+.bundle-price-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.bundle-old{font-size:14px;color:rgba(255,255,255,.35);text-decoration:line-through;}
+.bundle-price{font-family:var(--serif);font-size:46px;font-weight:700;color:var(--gold);line-height:1;}
+.bundle-per{font-size:12px;color:rgba(255,255,255,.35);}
+.bundle-save-pill{background:#dcfce7;color:#166534;font-size:11px;font-weight:700;padding:4px 12px;border-radius:12px;}
 
-    /* ── MEMBERSHIP ── */
-    .mem-bg { background: var(--cream2); }
-    .mem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .mem-card {
-      background: #fff; border: 2px solid var(--border);
-      border-radius: 16px; overflow: hidden;
-      transition: transform .22s, box-shadow .22s;
-    }
-    .mem-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(13,27,42,.1); }
-    .mem-card.featured { border-color: var(--gold); }
-    .mem-pop { background: var(--gold); color: var(--navy); text-align: center; font-size: 10.5px; font-weight: 700; letter-spacing: 1px; padding: 4px 0; }
-    .mem-header { padding: 26px 22px 20px; }
-    .mem-card.featured .mem-header { background: var(--navy); }
-    .mem-name { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
-    .mem-card.featured .mem-name { color: var(--gold); }
-    .mem-price { font-size: 34px; font-weight: 700; color: var(--navy); }
-    .mem-card.featured .mem-price { color: #fff; }
-    .mem-per { font-size: 13px; color: var(--muted); font-weight: 400; }
-    .mem-card.featured .mem-per { color: rgba(255,255,255,.4); }
-    .mem-feats { padding: 16px 22px; list-style: none; }
-    .mem-feats li {
-      font-size: 13.5px; padding: 7px 0; border-top: 1px solid var(--border);
-      display: flex; align-items: center; gap: 8px; color: var(--ink);
-    }
-    .yes { color: var(--gold); }
-    .no  { color: var(--border); }
-    .mem-foot { padding: 0 22px 22px; }
-    .mem-btn {
-      display: block; width: 100%; padding: 13px; border-radius: 8px;
-      text-align: center; font-family: var(--sans); font-size: 14px; font-weight: 600;
-      cursor: pointer; border: 1.5px solid var(--border); background: #fff; color: var(--navy);
-      text-decoration: none; transition: all .2s;
-    }
-    .mem-btn:hover { border-color: var(--gold); color: var(--gold); }
-    .mem-card.featured .mem-foot .mem-btn { background: var(--gold); color: var(--navy); border-color: var(--gold); }
-    .mem-card.featured .mem-foot .mem-btn:hover { background: var(--gold2); }
+@media(min-width:640px){
+  .bundle-inner{grid-template-columns:1fr auto;align-items:center;}
+  .bundle-price-col{text-align:center;min-width:160px;}
+}
 
-    /* ── CTA BANNER ── */
-    .cta-banner {
-      background: var(--navy); padding: 80px 24px; text-align: center;
-    }
-    .cta-banner h2 {
-      font-family: var(--serif); color: #fff; font-size: clamp(26px, 3.5vw, 38px);
-      margin-bottom: 12px;
-    }
-    .cta-banner h2 em { color: var(--gold); font-style: italic; }
-    .cta-banner p { color: rgba(255,255,255,.55); font-size: 16px; margin-bottom: 32px; }
-    .cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+/* Map cards grid */
+.maps-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;margin-bottom:28px;
+}
+@media(min-width:480px){.maps-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:900px){.maps-grid{grid-template-columns:repeat(3,1fr);gap:14px;}}
+@media(min-width:1100px){.maps-grid{grid-template-columns:repeat(4,1fr);}}
 
-    /* ── FOOTER ── */
-    footer { background: #060e18; padding: 56px 24px 28px; }
-    .footer-inner {
-      max-width: 1100px; margin: 0 auto;
-      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px;
-    }
-    .footer-logo { font-family: var(--serif); color: var(--gold); font-size: 20px; font-weight: 700; margin-bottom: 10px; }
-    .footer-tagline { font-size: 13px; color: rgba(255,255,255,.38); line-height: 1.65; max-width: 220px; }
-    .footer-head { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.7); margin-bottom: 14px; }
-    .footer-link { display: block; font-size: 13px; color: rgba(255,255,255,.38); padding: 4px 0; text-decoration: none; transition: color .2s; }
-    .footer-link:hover { color: var(--gold); }
-    .footer-bottom {
-      max-width: 1100px; margin: 0 auto;
-      border-top: 1px solid rgba(255,255,255,.07); padding-top: 22px;
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
-      font-size: 12px; color: rgba(255,255,255,.25);
-    }
+.map-card{
+  background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.1);
+  border-radius:14px;overflow:hidden;transition:all .25s;
+  display:flex;flex-direction:column;
+}
+.map-card:hover{border-color:rgba(201,168,76,.6);background:rgba(255,255,255,.07);transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,0,0,.3);}
+.map-card.in-cart{border-color:#22c55e;background:rgba(34,197,94,.05);}
+.map-card-top{padding:16px 14px 12px;display:flex;gap:10px;flex:1;}
+.map-card-emoji{
+  font-size:28px;flex-shrink:0;width:46px;height:46px;
+  background:rgba(255,255,255,.06);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+}
+.map-card-info{flex:1;min-width:0;}
+.map-card-name{font-family:var(--serif);color:var(--white);font-size:14px;font-weight:700;line-height:1.3;margin-bottom:4px;}
+.map-card-desc{font-size:12px;color:rgba(255,255,255,.45);line-height:1.5;margin-bottom:6px;}
+.map-card-stops{font-size:11px;color:rgba(255,255,255,.3);}
+.map-card-foot{
+  padding:10px 14px;border-top:1px solid rgba(255,255,255,.08);
+  background:rgba(0,0,0,.15);display:flex;align-items:center;justify-content:space-between;
+}
+.map-price{font-size:19px;font-weight:700;color:var(--gold);}
+.map-price-old{font-size:12px;color:rgba(255,255,255,.3);text-decoration:line-through;margin-right:3px;}
+.map-add-btn{
+  padding:7px 13px;border-radius:8px;border:none;
+  font-size:12.5px;font-weight:700;cursor:pointer;transition:all .2s;
+}
+.map-add-btn.default{background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3);}
+.map-add-btn.default:hover{background:var(--gold);color:var(--navy);}
+.map-add-btn.added{background:#166534;color:white;}
 
-    /* ── TOAST ── */
-    #toast {
-      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-      background: var(--navy); color: #fff;
-      padding: 12px 20px; border-radius: 10px;
-      border-left: 4px solid var(--gold);
-      font-size: 14px; font-weight: 500;
-      box-shadow: 0 12px 40px rgba(0,0,0,.3);
-      display: none; align-items: center; gap: 10px;
-      max-width: 320px; animation: slideIn .3s ease;
-    }
-    #toast.show { display: flex; }
+/* Cart strip */
+.cart-strip{
+  background:rgba(201,168,76,.09);border:1px solid rgba(201,168,76,.22);
+  border-radius:12px;padding:14px 18px;
+  display:none;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;margin-bottom:20px;
+}
+.cart-strip.visible{display:flex;}
+.cart-strip-left{display:flex;align-items:center;gap:10px;}
+.cart-badge{
+  background:var(--gold);color:var(--navy);
+  width:28px;height:28px;border-radius:50%;
+  font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.cart-text{font-size:14px;color:rgba(255,255,255,.8);}
+.cart-total-val{color:var(--gold);font-weight:700;font-size:17px;}
+.cart-strip-btns{display:flex;gap:8px;align-items:center;}
+.cart-clear{
+  background:transparent;color:rgba(255,255,255,.4);
+  border:1px solid rgba(255,255,255,.15);border-radius:8px;
+  padding:8px 14px;font-size:13px;cursor:pointer;transition:all .2s;
+}
+.cart-clear:hover{color:#f87171;border-color:#f87171;}
+.cart-checkout{
+  background:var(--gold);color:var(--navy);border:none;border-radius:8px;
+  padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;
+}
+.cart-checkout:hover{background:var(--gold2);transform:translateY(-1px);}
 
-    @keyframes slideIn {
-      from { opacity:0; transform:translateX(24px); }
-      to   { opacity:1; transform:translateX(0); }
-    }
-    @keyframes fadeUp {
-      from { opacity:0; transform:translateY(18px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
-    .fade-up { opacity:0; animation: fadeUp .6s ease forwards; }
-    .d1 { animation-delay: .1s; }
-    .d2 { animation-delay: .2s; }
-    .d3 { animation-delay: .35s; }
-    .d4 { animation-delay: .5s; }
-    .d5 { animation-delay: .65s; }
+/* ═══════════════════════════════════════════════════
+   PAYMENT MODAL — FULLY FUNCTIONAL
+═══════════════════════════════════════════════════ */
+.pay-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:9000;display:none;align-items:flex-end;justify-content:center;
+  padding:0;
+}
+.pay-overlay.open{display:flex;}
+@media(min-width:600px){.pay-overlay{align-items:center;padding:20px;}}
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 900px) {
-      .cat-grid     { grid-template-columns: repeat(2, 1fr); }
-      .consult-grid { grid-template-columns: 1fr; }
-      .testi-grid   { grid-template-columns: repeat(2, 1fr); }
-      .tools-grid   { grid-template-columns: repeat(2, 1fr); }
-      .blog-grid    { grid-template-columns: repeat(2, 1fr); }
-      .mem-grid     { grid-template-columns: 1fr; }
-      .footer-inner { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 600px) {
-      .nav-links .nav-a { display: none; }
-      .cat-grid   { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-      .testi-grid { grid-template-columns: 1fr; }
-      .tools-grid { grid-template-columns: 1fr; }
-      .blog-grid  { grid-template-columns: 1fr; }
-      .lead-form  { flex-direction: column; }
-      .footer-inner { grid-template-columns: 1fr; gap: 28px; }
-      .hero { padding: 72px 20px 64px; }
-    }
-  </style>
+.pay-modal{
+  background:var(--white);width:100%;max-width:520px;
+  border-radius:20px 20px 0 0;max-height:96vh;overflow-y:auto;
+  box-shadow:0 -8px 48px rgba(0,0,0,.4);
+  animation:slideUp .35s cubic-bezier(.2,.8,.4,1);
+}
+@media(min-width:600px){
+  .pay-modal{border-radius:20px;animation:fadeUp .3s ease;}
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+/* Modal drag handle (mobile) */
+.pay-modal-handle{
+  width:40px;height:4px;background:var(--border);border-radius:2px;
+  margin:10px auto 0;display:block;
+}
+@media(min-width:600px){.pay-modal-handle{display:none;}}
+
+.pay-header{
+  background:var(--navy);padding:16px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.pay-header h3{font-family:var(--serif);color:var(--gold);font-size:17px;}
+.pay-close{
+  background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);
+  width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.pay-close:hover{background:rgba(255,255,255,.2);}
+
+.pay-body{padding:18px 20px 24px;}
+
+/* Order summary */
+.order-summary{
+  background:var(--cream);border:1px solid var(--border);
+  border-radius:10px;padding:14px 16px;margin-bottom:18px;
+}
+.order-label{font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
+.order-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 0;font-size:13.5px;border-top:1px solid var(--border);
+}
+.order-item:first-of-type{border-top:none;}
+.order-item-name{color:var(--ink);flex:1;padding-right:10px;}
+.order-item-price{font-weight:700;color:var(--navy);flex-shrink:0;}
+.order-total-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0 0;margin-top:6px;border-top:2px solid var(--border);
+}
+.order-total-label{font-size:14px;font-weight:700;color:var(--navy);}
+.order-total-val{font-family:var(--serif);font-size:24px;font-weight:700;color:var(--navy);}
+
+/* Contact fields */
+.fields-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+@media(max-width:400px){.fields-row{grid-template-columns:1fr;}}
+.field{margin-bottom:13px;}
+.field label{font-size:11.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;}
+.field input,.field select{
+  width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:9px;
+  font-family:var(--sans);font-size:14px;color:var(--ink);
+  background:var(--white);outline:none;transition:border-color .2s;
+  -webkit-appearance:none;
+}
+.field input:focus,.field select:focus{border-color:var(--navy);}
+.field input.err{border-color:#dc2626;}
+.field-icon{position:relative;}
+.field-icon input{padding-right:40px;}
+.field-icon .fi{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;}
+.field-hint{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* Payment method tabs */
+.pm-label-text{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
+.pm-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:16px;}
+.pm-tab{
+  padding:9px 4px;border-radius:10px;border:2px solid var(--border);background:var(--white);
+  cursor:pointer;text-align:center;transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.pm-tab:hover{border-color:var(--gold);}
+.pm-tab.active{border-color:var(--navy);background:var(--cream);}
+.pm-tab-icon{font-size:18px;line-height:1;}
+.pm-tab-name{font-size:10px;font-weight:600;color:var(--muted);}
+.pm-tab.active .pm-tab-name{color:var(--navy);}
+
+/* Card logos */
+.card-brands{display:flex;gap:6px;align-items:center;margin-bottom:13px;flex-wrap:wrap;}
+.card-brand{
+  height:24px;border-radius:4px;border:1px solid var(--border);
+  padding:2px 7px;background:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10.5px;font-weight:800;
+}
+.brand-visa{color:#1a1f71;}
+.brand-mc{color:#eb001b;}
+.brand-amex{color:#2e77bc;}
+.brand-maestro{color:#0099df;}
+
+/* Stripe iframe area */
+#stripe-card-element{
+  padding:12px 14px;border:1.5px solid var(--border);border-radius:9px;
+  background:var(--white);min-height:44px;transition:border-color .2s;
+  margin-bottom:6px;
+}
+#stripe-card-element.StripeElement--focus{border-color:var(--navy);}
+#stripe-card-element.StripeElement--invalid{border-color:#dc2626;}
+#stripe-error{color:#dc2626;font-size:12.5px;margin-top:5px;min-height:18px;}
+
+/* PayPal container */
+#paypal-container{margin-bottom:10px;}
+.paypal-divider{text-align:center;font-size:12px;color:var(--muted);margin:10px 0;position:relative;}
+.paypal-divider::before,.paypal-divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--border);}
+.paypal-divider::before{left:0;}
+.paypal-divider::after{right:0;}
+
+/* Wallet pay */
+.wallet-btns{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+.apple-btn{
+  width:100%;padding:14px;background:#000;color:#fff;
+  border:none;border-radius:10px;font-size:16px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:opacity .2s;
+}
+.apple-btn:hover{opacity:.88;}
+.gpay-btn{
+  width:100%;padding:13px;background:#fff;color:#3c4043;
+  border:1.5px solid #dadce0;border-radius:10px;font-size:14px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .2s;
+}
+.gpay-btn:hover{background:#f8f8f8;}
+.wallet-note{font-size:12px;color:var(--muted);text-align:center;margin-bottom:10px;}
+
+/* Submit button */
+.pay-submit{
+  width:100%;padding:15px;background:var(--navy);color:var(--gold);
+  border:none;border-radius:10px;font-size:15px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.3px;
+  margin-bottom:12px;
+}
+.pay-submit:hover{background:var(--navy2);transform:translateY(-1px);box-shadow:0 8px 24px rgba(13,27,42,.3);}
+.pay-submit:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none;}
+.pay-submit.loading::after{
+  content:'';width:18px;height:18px;border:2px solid rgba(201,168,76,.4);
+  border-top-color:var(--gold);border-radius:50%;
+  animation:spin .7s linear infinite;display:inline-block;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.pay-secure{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11.5px;color:var(--muted);margin-bottom:12px;}
+.provider-logos{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--border);}
+.prov{font-size:10px;font-weight:700;padding:3px 9px;border:1px solid var(--border);border-radius:5px;color:var(--muted);}
+
+/* Panel show/hide */
+.pay-panel{display:none;}
+.pay-panel.active{display:block;}
+
+/* Success screen */
+.pay-success{display:none;padding:28px 20px;text-align:center;}
+.pay-success.show{display:block;animation:fadeUp .4s ease;}
+.success-icon{font-size:52px;margin-bottom:14px;}
+.success-title{font-family:var(--serif);font-size:22px;color:var(--navy);margin-bottom:8px;}
+.success-sub{color:var(--muted);font-size:14px;line-height:1.65;margin-bottom:20px;}
+.access-code-box{
+  background:var(--cream);border:2px solid var(--gold);
+  border-radius:12px;padding:14px 18px;margin-bottom:20px;
+}
+.access-code-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+.access-code-val{font-family:var(--serif);font-size:24px;font-weight:700;color:var(--gold);letter-spacing:3px;}
+.success-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+
+/* ═══════════════════════════════════════════════════
+   CATEGORIES BAR
+═══════════════════════════════════════════════════ */
+.cats-bar{background:var(--white);border-bottom:1px solid var(--border);}
+.cats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+@media(min-width:480px){.cats-grid{grid-template-columns:repeat(4,1fr);}}
+.cat-card{
+  padding:18px 14px;border-radius:12px;background:var(--cream);
+  border:1px solid var(--border);text-align:center;cursor:pointer;
+  transition:all .2s;text-decoration:none;display:block;
+}
+.cat-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 6px 20px rgba(201,168,76,.12);}
+.cat-icon{font-size:26px;margin-bottom:7px;}
+.cat-name{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:2px;}
+.cat-count{font-size:11.5px;color:var(--muted);}
+
+/* ═══════════════════════════════════════════════════
+   PRODUCTS GRID
+═══════════════════════════════════════════════════ */
+.products-bg{background:var(--cream);}
+.products-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+@media(min-width:480px){.products-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:900px){.products-grid{grid-template-columns:repeat(3,1fr);}}
+
+.product-card{
+  background:var(--white);border-radius:14px;border:1px solid var(--border);
+  overflow:hidden;transition:all .25s;cursor:pointer;
+}
+.product-card:hover{transform:translateY(-3px);box-shadow:var(--sh-lg);}
+.product-thumb{
+  height:150px;display:flex;align-items:center;justify-content:center;
+  font-size:44px;position:relative;
+  background:linear-gradient(135deg,var(--cream),var(--cream2));
+}
+.abs-badge{position:absolute;top:10px;right:10px;}
+.cat-badge{position:absolute;top:10px;left:10px;}
+.product-body{padding:14px 16px 18px;}
+.product-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--navy);margin-bottom:5px;line-height:1.3;}
+.product-desc{font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.5;}
+.stars{color:var(--gold);font-size:13px;}
+.product-meta-row{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.product-foot{display:flex;align-items:center;justify-content:space-between;}
+.price{font-size:19px;font-weight:700;color:var(--navy);}
+.price-old{font-size:12.5px;color:var(--muted);text-decoration:line-through;margin-right:4px;}
+.add-btn{
+  background:var(--navy);color:var(--gold);border:none;border-radius:8px;
+  padding:7px 13px;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .2s;
+}
+.add-btn:hover{background:var(--navy2);}
+
+/* ═══════════════════════════════════════════════════
+   CONSULTATIONS
+═══════════════════════════════════════════════════ */
+.consult-bg{background:var(--white);}
+.consult-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+@media(min-width:600px){.consult-grid{grid-template-columns:repeat(3,1fr);}}
+
+.consult-card{
+  border:2px solid var(--border);border-radius:14px;padding:24px 20px;
+  position:relative;background:var(--white);cursor:pointer;transition:all .25s;
+}
+.consult-card:hover,.consult-card.featured{border-color:var(--gold);}
+.consult-card:hover{box-shadow:0 8px 28px rgba(201,168,76,.15);}
+.popular-tag{
+  position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+  background:var(--gold);color:var(--navy);
+  font-size:10px;font-weight:800;letter-spacing:.5px;
+  padding:3px 12px;border-radius:10px;white-space:nowrap;
+}
+.tier-name{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--navy);margin-bottom:3px;}
+.tier-dur{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.tier-price{font-size:30px;font-weight:700;color:var(--navy);margin-bottom:18px;}
+.tier-feats{list-style:none;}
+.tier-feats li{font-size:13px;color:var(--ink);padding:5px 0;border-top:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+.tier-feats li::before{content:'✓';color:var(--gold);font-weight:700;flex-shrink:0;}
+.consult-btn{
+  display:block;margin-top:20px;text-align:center;
+  background:var(--navy);color:var(--gold);
+  border:none;width:100%;padding:11px;
+  border-radius:8px;font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;
+}
+.consult-card.featured .consult-btn{background:var(--gold);color:var(--navy);}
+.consult-btn:hover{opacity:.88;}
+
+/* ═══════════════════════════════════════════════════
+   LEAD MAGNET
+═══════════════════════════════════════════════════ */
+.lead-bg{background:var(--cream2);}
+.lead-box{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
+  border-radius:18px;padding:40px 28px;text-align:center;
+  position:relative;overflow:hidden;border:1px solid rgba(201,168,76,.15);
+}
+.lead-box::before{content:'';position:absolute;top:-80px;right:-80px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.09) 0%,transparent 70%);}
+.lead-box h3{font-family:var(--serif);color:var(--white);font-size:clamp(18px,3vw,24px);margin-bottom:9px;position:relative;z-index:1;}
+.lead-box p{color:rgba(255,255,255,.58);font-size:14px;margin-bottom:22px;position:relative;z-index:1;}
+.lead-form{display:flex;gap:8px;max-width:400px;margin:0 auto;position:relative;z-index:1;flex-wrap:wrap;}
+.lead-form input{
+  flex:1;min-width:200px;padding:11px 14px;border-radius:8px;
+  border:1.5px solid rgba(255,255,255,.18);background:rgba(255,255,255,.09);
+  color:var(--white);font-family:var(--sans);font-size:14px;outline:none;
+  transition:border-color .2s;
+}
+.lead-form input::placeholder{color:rgba(255,255,255,.4);}
+.lead-form input:focus{border-color:var(--gold);}
+.lead-small{font-size:11px;color:rgba(255,255,255,.28);margin-top:10px;position:relative;z-index:1;}
+
+/* ═══════════════════════════════════════════════════
+   TESTIMONIALS
+═══════════════════════════════════════════════════ */
+.testi-bg{background:var(--white);}
+.testi-grid{display:grid;grid-template-columns:1fr;gap:14px;}
+@media(min-width:480px){.testi-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:900px){.testi-grid{grid-template-columns:repeat(4,1fr);}}
+.testi-card{background:var(--cream);border:1px solid var(--border);border-radius:14px;padding:20px;}
+.testi-stars{color:var(--gold);font-size:13px;margin-bottom:9px;}
+.testi-text{font-size:13px;color:var(--ink);line-height:1.7;font-style:italic;margin-bottom:14px;}
+.testi-author{display:flex;align-items:center;gap:9px;}
+.testi-avatar{width:34px;height:34px;border-radius:50%;background:var(--cream2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.testi-name{font-size:13px;font-weight:700;color:var(--navy);}
+.testi-from{font-size:11.5px;color:var(--muted);}
+
+/* ═══════════════════════════════════════════════════
+   BLOG
+═══════════════════════════════════════════════════ */
+.blog-bg{background:var(--white);}
+.blog-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+@media(min-width:600px){.blog-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:900px){.blog-grid{grid-template-columns:repeat(3,1fr);}}
+.blog-card{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--white);text-decoration:none;display:block;transition:all .2s;cursor:pointer;}
+.blog-card:hover{transform:translateY(-2px);box-shadow:var(--sh);}
+.blog-thumb{height:120px;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:40px;}
+.blog-body{padding:14px 16px 18px;}
+.blog-meta{font-size:11.5px;color:var(--muted);margin-bottom:6px;}
+.blog-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--navy);line-height:1.35;margin-bottom:6px;}
+.blog-excerpt{font-size:12.5px;color:var(--muted);line-height:1.55;}
+
+/* ═══════════════════════════════════════════════════
+   MEMBERSHIP
+═══════════════════════════════════════════════════ */
+.mem-bg{background:var(--cream2);}
+.mem-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+@media(min-width:600px){.mem-grid{grid-template-columns:repeat(3,1fr);}}
+.mem-card{background:var(--white);border:2px solid var(--border);border-radius:16px;overflow:hidden;transition:all .25s;}
+.mem-card:hover{transform:translateY(-3px);box-shadow:var(--sh-lg);}
+.mem-card.featured{border-color:var(--gold);}
+.mem-pop{background:var(--gold);color:var(--navy);text-align:center;font-size:10px;font-weight:800;letter-spacing:1px;padding:4px 0;}
+.mem-header{padding:22px 20px 18px;}
+.mem-card.featured .mem-header{background:var(--navy);}
+.mem-name{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+.mem-card.featured .mem-name{color:var(--gold);}
+.mem-price{font-size:30px;font-weight:700;color:var(--navy);}
+.mem-card.featured .mem-price{color:var(--white);}
+.mem-per{font-size:13px;color:var(--muted);font-weight:400;}
+.mem-card.featured .mem-per{color:rgba(255,255,255,.4);}
+.mem-feats{padding:14px 20px;list-style:none;}
+.mem-feats li{font-size:13px;padding:6px 0;border-top:1px solid var(--border);display:flex;align-items:center;gap:7px;color:var(--ink);}
+.yes{color:var(--gold);font-size:14px;}.no{color:var(--border);}
+.mem-foot{padding:0 20px 20px;}
+.mem-btn{display:block;width:100%;padding:12px;border-radius:8px;text-align:center;font-size:14px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--navy);transition:all .2s;}
+.mem-btn:hover{border-color:var(--gold);color:var(--gold);}
+.mem-card.featured .mem-foot .mem-btn{background:var(--gold);color:var(--navy);border-color:var(--gold);}
+
+/* ═══════════════════════════════════════════════════
+   CTA BANNER
+═══════════════════════════════════════════════════ */
+.cta-banner{background:var(--navy);padding:64px 20px;text-align:center;}
+.cta-banner h2{font-family:var(--serif);color:var(--white);font-size:clamp(22px,4vw,34px);margin-bottom:10px;}
+.cta-banner h2 em{color:var(--gold);font-style:italic;}
+.cta-banner p{color:rgba(255,255,255,.55);font-size:15px;margin-bottom:28px;max-width:460px;margin-left:auto;margin-right:auto;}
+.cta-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+
+/* ═══════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════ */
+footer{background:#060e18;padding:48px 20px 24px;}
+.footer-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:32px;}
+@media(min-width:600px){.footer-grid{grid-template-columns:2fr 1fr 1fr 1fr;}}
+.footer-logo{font-family:var(--serif);color:var(--gold);font-size:19px;font-weight:700;margin-bottom:9px;}
+.footer-tagline{font-size:13px;color:rgba(255,255,255,.35);line-height:1.65;max-width:220px;}
+.footer-head{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.65);margin-bottom:13px;}
+.footer-link{display:block;font-size:13px;color:rgba(255,255,255,.35);padding:4px 0;text-decoration:none;transition:color .2s;background:none;border:none;cursor:pointer;text-align:left;font-family:var(--sans);}
+.footer-link:hover{color:var(--gold);}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.07);padding-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:12px;color:rgba(255,255,255,.25);}
+
+/* Scroll fade animation */
+.fade-up{opacity:0;transform:translateY(20px);transition:opacity .55s ease,transform .55s ease;}
+.fade-up.visible{opacity:1;transform:translateY(0);}
+</style>
 </head>
 <body>
 
-<!-- ── NAV ── -->
-<nav>
+<!-- ════════════════════════════════════════════════
+     NAVBAR
+════════════════════════════════════════════════ -->
+<nav class="navbar">
   <div class="nav-inner">
-    <a href="#" class="logo">
-      <div class="logo-mark">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-mark">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <rect x="1" y="12" width="16" height="2" rx="1" fill="#c9a84c"/>
           <rect x="2" y="4" width="2" height="8" rx="1" fill="#c9a84c"/>
@@ -500,243 +748,472 @@
       </div>
       London Lens
     </a>
-    <div class="nav-links">
-      <a class="nav-a" href="#products">Products</a>
-      <a class="nav-a" href="#consultations">Consultations</a>
-      <a class="nav-a" href="#tools">Tools</a>
-      <a class="nav-a" href="#blog">Blog</a>
-      <a class="nav-a" href="#membership">Membership</a>
+
+    <!-- Desktop links -->
+    <div class="nav-links-desktop">
+      <a href="#maps">🗺️ Maps</a>
+      <a href="#products">Products</a>
+      <a href="#consultations">Consultations</a>
+      <a href="#tools">Tools</a>
+      <a href="#blog">Blog</a>
+      <a href="#membership">Membership</a>
       <a class="nav-a" href="london-hidden-walk-map.html">Explore the Hidden Walk Map →</a>
     </div>
+
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="nav-cart-btn" id="nav-cart-btn" onclick="openPayModal()" style="display:none;">
+        🛒 Cart
+        <span class="cart-bubble" id="nav-bubble">0</span>
+      </button>
+      <a href="#lead" class="nav-cta-desktop" style="display:none;" id="nav-cta-desktop">Free Guide</a>
+      <!-- Hamburger -->
+      <button class="nav-burger" id="nav-burger" onclick="toggleMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile drawer -->
+  <div class="nav-drawer" id="nav-drawer">
+    <a href="#maps"          onclick="closeMenu()">🗺️ Maps</a>
+    <a href="#products"      onclick="closeMenu()">📦 Products</a>
+    <a href="#consultations" onclick="closeMenu()">🎓 Consultations</a>
+    <a href="#tools"         onclick="closeMenu()">🔧 Free Tools</a>
+    <a href="#blog"          onclick="closeMenu()">📝 Blog</a>
+    <a href="#membership"    onclick="closeMenu()">⭐ Membership</a>
+    <a href="#lead" class="drawer-cta" onclick="closeMenu()">🎁 Get Free Guide</a>
   </div>
 </nav>
 
-<!-- ── HERO ── -->
+<!-- ════════════════════════════════════════════════
+     HERO
+════════════════════════════════════════════════ -->
 <section class="hero">
   <div class="hero-glow"></div>
-
-  <!-- London skyline silhouette -->
-  <div class="hero-skyline">
-    <svg class="skyline-svg" viewBox="0 0 1440 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" width="100%" height="110">
-      <!-- Big Ben -->
-      <rect x="40" y="18" width="8" height="92" fill="rgba(201,168,76,.18)"/>
-      <rect x="36" y="12" width="16" height="6" fill="rgba(201,168,76,.2)"/>
-      <rect x="43" y="5" width="2" height="7" fill="rgba(201,168,76,.28)"/>
-      <!-- Parliament -->
-      <rect x="60" y="55" width="100" height="55" fill="rgba(201,168,76,.08)"/>
-      <rect x="62" y="44" width="8" height="11" fill="rgba(201,168,76,.12)"/>
-      <rect x="78" y="48" width="6" height="7" fill="rgba(201,168,76,.1)"/>
-      <!-- The Shard -->
-      <polygon points="260,110 282,110 277,8 265,8" fill="rgba(201,168,76,.14)"/>
-      <!-- Gherkin -->
-      <ellipse cx="330" cy="70" rx="14" ry="55" fill="rgba(255,255,255,.05)"/>
-      <!-- Walkie-Talkie -->
-      <rect x="380" y="45" width="38" height="65" rx="3" fill="rgba(255,255,255,.05)"/>
-      <rect x="378" y="38" width="42" height="7" rx="2" fill="rgba(255,255,255,.07)"/>
-      <!-- Canary Wharf -->
-      <rect x="460" y="28" width="28" height="82" fill="rgba(201,168,76,.1)"/>
-      <rect x="468" y="20" width="12" height="8" fill="rgba(201,168,76,.14)"/>
-      <rect x="473" y="12" width="2" height="8" fill="rgba(201,168,76,.22)"/>
-      <!-- Cheesegrater -->
-      <polygon points="540,110 568,110 549,20" fill="rgba(255,255,255,.05)"/>
-      <!-- St Paul's dome -->
-      <rect x="620" y="65" width="55" height="45" fill="rgba(255,255,255,.05)"/>
-      <ellipse cx="648" cy="58" rx="22" ry="14" fill="rgba(255,255,255,.07)"/>
-      <rect x="646" y="38" width="4" height="20" fill="rgba(255,255,255,.1)"/>
-      <!-- Tate Modern chimney -->
-      <rect x="730" y="14" width="12" height="96" fill="rgba(255,255,255,.07)"/>
-      <rect x="724" y="55" width="24" height="55" fill="rgba(255,255,255,.04)"/>
-      <!-- NatWest Tower -->
-      <rect x="800" y="35" width="22" height="75" fill="rgba(255,255,255,.05)"/>
-      <rect x="808" y="28" width="6" height="7" fill="rgba(255,255,255,.07)"/>
-      <!-- Fillers -->
-      <rect x="850" y="70" width="22" height="40" fill="rgba(255,255,255,.04)"/>
-      <rect x="884" y="58" width="18" height="52" fill="rgba(255,255,255,.04)"/>
-      <rect x="912" y="75" width="30" height="35" fill="rgba(255,255,255,.04)"/>
-      <rect x="955" y="50" width="15" height="60" fill="rgba(201,168,76,.06)"/>
-      <rect x="982" y="68" width="28" height="42" fill="rgba(255,255,255,.04)"/>
-      <rect x="1022" y="62" width="20" height="48" fill="rgba(255,255,255,.04)"/>
-      <rect x="1055" y="78" width="35" height="32" fill="rgba(255,255,255,.04)"/>
-      <rect x="1100" y="44" width="14" height="66" fill="rgba(201,168,76,.06)"/>
-      <rect x="1125" y="72" width="28" height="38" fill="rgba(255,255,255,.04)"/>
-      <rect x="1165" y="58" width="18" height="52" fill="rgba(255,255,255,.04)"/>
-      <rect x="1195" y="80" width="40" height="30" fill="rgba(255,255,255,.04)"/>
-      <rect x="1248" y="48" width="16" height="62" fill="rgba(201,168,76,.07)"/>
-      <rect x="1276" y="70" width="30" height="40" fill="rgba(255,255,255,.04)"/>
-      <rect x="1318" y="58" width="22" height="52" fill="rgba(255,255,255,.04)"/>
-      <rect x="1354" y="42" width="18" height="68" fill="rgba(201,168,76,.06)"/>
-      <rect x="1386" y="75" width="32" height="35" fill="rgba(255,255,255,.04)"/>
-      <!-- Thames shimmer -->
-      <rect x="0" y="102" width="1440" height="8" fill="rgba(201,168,76,.06)"/>
-    </svg>
-  </div>
-
+  <svg class="hero-skyline" viewBox="0 0 1440 90" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice">
+    <rect x="40" y="15" width="8" height="75" fill="rgba(201,168,76,.15)"/>
+    <rect x="36" y="9" width="16" height="6" fill="rgba(201,168,76,.18)"/>
+    <rect x="43" y="3" width="2" height="6" fill="rgba(201,168,76,.25)"/>
+    <rect x="60" y="42" width="90" height="48" fill="rgba(201,168,76,.07)"/>
+    <polygon points="240,90 260,90 255,6 245,6" fill="rgba(201,168,76,.12)"/>
+    <ellipse cx="310" cy="58" rx="12" ry="44" fill="rgba(255,255,255,.05)"/>
+    <rect x="360" y="36" width="35" height="54" rx="3" fill="rgba(255,255,255,.05)"/>
+    <rect x="440" y="22" width="25" height="68" fill="rgba(201,168,76,.09)"/>
+    <rect x="447" y="14" width="11" height="8" fill="rgba(201,168,76,.12)"/>
+    <polygon points="520,90 546,90 530,16" fill="rgba(255,255,255,.05)"/>
+    <rect x="600" y="52" width="50" height="38" fill="rgba(255,255,255,.05)"/>
+    <ellipse cx="625" cy="46" rx="20" ry="13" fill="rgba(255,255,255,.06)"/>
+    <rect x="622" y="30" width="4" height="16" fill="rgba(255,255,255,.09)"/>
+    <rect x="710" y="12" width="10" height="78" fill="rgba(255,255,255,.06)"/>
+    <rect x="704" y="46" width="22" height="44" fill="rgba(255,255,255,.04)"/>
+    <rect x="790" y="32" width="20" height="58" fill="rgba(255,255,255,.05)"/>
+    <rect x="840" y="58" width="20" height="32" fill="rgba(255,255,255,.04)"/>
+    <rect x="870" y="46" width="16" height="44" fill="rgba(255,255,255,.04)"/>
+    <rect x="900" y="62" width="28" height="28" fill="rgba(255,255,255,.04)"/>
+    <rect x="940" y="38" width="13" height="52" fill="rgba(201,168,76,.06)"/>
+    <rect x="965" y="56" width="26" height="34" fill="rgba(255,255,255,.04)"/>
+    <rect x="1002" y="50" width="18" height="40" fill="rgba(255,255,255,.04)"/>
+    <rect x="1032" y="66" width="32" height="24" fill="rgba(255,255,255,.04)"/>
+    <rect x="1078" y="36" width="13" height="54" fill="rgba(201,168,76,.06)"/>
+    <rect x="1104" y="58" width="26" height="32" fill="rgba(255,255,255,.04)"/>
+    <rect x="1142" y="46" width="16" height="44" fill="rgba(255,255,255,.04)"/>
+    <rect x="1170" y="64" width="38" height="26" fill="rgba(255,255,255,.04)"/>
+    <rect x="1225" y="40" width="14" height="50" fill="rgba(201,168,76,.06)"/>
+    <rect x="1252" y="58" width="28" height="32" fill="rgba(255,255,255,.04)"/>
+    <rect x="1294" y="48" width="20" height="42" fill="rgba(255,255,255,.04)"/>
+    <rect x="1330" y="34" width="16" height="56" fill="rgba(201,168,76,.06)"/>
+    <rect x="1360" y="72" width="30" height="18" fill="rgba(255,255,255,.04)"/>
+    <rect x="0" y="82" width="1440" height="8" fill="rgba(201,168,76,.05)"/>
+  </svg>
   <div class="hero-inner">
-    <div class="pill-eyebrow fade-up d1"><span class="pill-dot"></span>London Relocation Platform</div>
-    <h1 class="fade-up d2">
+    <div class="pill-eyebrow fade-up" style="animation-delay:.1s;">
+      <span class="pill-dot"></span> London Relocation Platform
+    </div>
+    <h1 class="fade-up" style="animation-delay:.2s;">
       Your Guide to<br><em>Living & Thriving</em><br>in London
     </h1>
-    <p class="hero-sub fade-up d3">
-      Trusted digital resources, expert consultations and free tools
+    <p class="hero-sub fade-up" style="animation-delay:.35s;">
+      11 exclusive interactive walking maps, expert consultations and free tools
       for newcomers from Bangladesh, India, Pakistan, Nigeria and beyond.
     </p>
-    <div class="hero-btns fade-up d4">
-      <a href="#products" class="btn btn-gold">Browse Products →</a>
-      <a href="#consultations" class="btn btn-outline">Book a Consultation</a>
+    <div class="hero-btns fade-up" style="animation-delay:.5s;">
+      <a href="#maps" class="btn btn-gold btn-lg">🗺️ Browse Maps from £0.99</a>
+      <a href="#consultations" class="btn btn-outline-white btn-lg">Book Consultation</a>
     </div>
-    <div class="trust-row fade-up d5">
-      <div class="trust-item"><span>✦</span> 12,400+ Newcomers Helped</div>
-      <div class="trust-item"><span>✦</span> Secure UK Payments</div>
-      <div class="trust-item"><span>✦</span> Instant Downloads</div>
-      <div class="trust-item"><span>✦</span> 4.9★ Rated</div>
-    </div>
-  </div>
-</section>
-
-<!-- ── CATEGORIES ── -->
-<section class="section-sm cats">
-  <div class="wrap">
-    <div class="cat-grid">
-      <a href="#products" class="cat-card">
-        <div class="cat-icon">🗺️</div>
-        <div class="cat-name">Relocation</div>
-        <div class="cat-count">4 guides</div>
-      </a>
-      <a href="#products" class="cat-card">
-        <div class="cat-icon">✈️</div>
-        <div class="cat-name">Travel</div>
-        <div class="cat-count">3 guides</div>
-      </a>
-      <a href="#products" class="cat-card">
-        <div class="cat-icon">📸</div>
-        <div class="cat-name">Photography</div>
-        <div class="cat-count">3 guides</div>
-      </a>
-      <a href="#products" class="cat-card">
-        <div class="cat-icon">💼</div>
-        <div class="cat-name">Job Search</div>
-        <div class="cat-count">3 toolkits</div>
-      </a>
+    <div class="hero-trust fade-up" style="animation-delay:.65s;">
+      <div class="trust-item"><span class="trust-dot"></span> 12,400+ Helped</div>
+      <div class="trust-item"><span class="trust-dot"></span> Stripe Secured</div>
+      <div class="trust-item"><span class="trust-dot"></span> Instant Access</div>
+      <div class="trust-item"><span class="trust-dot"></span> 4.9★ Rated</div>
     </div>
   </div>
 </section>
 
-<!-- ── PRODUCTS ── -->
-<section class="section products-bg" id="products">
+<!-- ════════════════════════════════════════════════
+     MAPS MARKETPLACE  ← TOP SECTION
+════════════════════════════════════════════════ -->
+<section class="maps-section section" id="maps">
   <div class="wrap">
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:36px;gap:16px;flex-wrap:wrap;">
-      <div>
-        <div class="eyebrow">Digital Marketplace</div>
-        <h2 class="section-title">Guides, Maps & Toolkits</h2>
-        <p class="section-sub">Instantly downloadable resources written for newcomers to London.</p>
+
+    <!-- Header -->
+    <div class="maps-hdr">
+      <span class="eyebrow">🗺️ Interactive Maps</span>
+      <h2 class="section-title" style="color:var(--white);">11 Premium <em style="color:var(--gold);font-style:italic;">London Walking Maps</em></h2>
+      <p class="section-sub">Each map includes a live interactive experience + printable PDF — with hidden tips, savings breakdowns and cheapest transport from central London.</p>
+    </div>
+
+    <!-- Savings banner -->
+    <div class="savings-banner fade-up">
+      <div class="savings-banner-icon">💰</div>
+      <div class="savings-banner-text">
+        Guided tours of these routes cost <strong>£15–£30 per person</strong>. Our maps give you the same expert knowledge for <strong>£0.99–£1.99 each</strong> — saving the average visitor over <strong>£180</strong> in tour fees.
       </div>
     </div>
-    <div class="product-grid">
 
-      <a href="#" class="product-card" onclick="addCart(event,'London Relocation Starter Guide','£19.99')">
-        <div class="product-thumb" style="background:linear-gradient(135deg,#eef4ff,#dce8ff);">
-          📦<span class="badge badge-navy abs-badge">Bestseller</span>
+    <!-- Cart strip (appears when items added) -->
+    <div class="cart-strip" id="cart-strip">
+      <div class="cart-strip-left">
+        <div class="cart-badge" id="cart-badge-count">0</div>
+        <div class="cart-text">
+          <span id="cart-items-label">0 maps</span><br/>
+          <span class="cart-total-val" id="cart-total-label">£0.00</span>
         </div>
-        <div class="product-body">
-          <div class="badge badge-gold" style="margin-bottom:8px;">Relocation</div>
-          <div class="product-title">London Relocation Starter Guide</div>
-          <div class="product-desc">68-page complete relocation manual covering housing, banking, NHS & utilities.</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">★★★★★ (247) · 68 pages</div>
-          <div class="product-foot">
-            <div><span class="price-old">£29.99</span><span class="price">£19.99</span></div>
-            <button class="btn-add">+ Add</button>
+      </div>
+      <div class="cart-strip-btns">
+        <button class="cart-clear" onclick="clearCart()">Clear</button>
+        <button class="cart-checkout" onclick="openPayModal()">🔒 Checkout →</button>
+      </div>
+    </div>
+
+    <!-- Bundle hero -->
+    <div class="bundle-card fade-up">
+      <div class="bundle-ribbon">BEST VALUE</div>
+      <div class="bundle-inner">
+        <div class="bundle-left">
+          <div class="bundle-tag">⚡ Complete Collection</div>
+          <div class="bundle-title">All 11 London Maps — <em>Complete Bundle</em></div>
+          <div class="bundle-desc">Every map, every PDF guide, lifetime access code for the interactive platform. Pubs, Museums, Monuments, WW1&amp;2, Gardens, Parks, Vintage Markets, Forts, Sherlock Holmes, Shakespeare &amp; Harry Potter.</div>
+          <div class="bundle-chips">
+            <span class="bundle-chip">🍺 Pubs</span>
+            <span class="bundle-chip">🏛️ Museums</span>
+            <span class="bundle-chip">🏰 Monuments</span>
+            <span class="bundle-chip">⚔️ Forts</span>
+            <span class="bundle-chip">🎖️ WW1&amp;2</span>
+            <span class="bundle-chip">🌸 Gardens</span>
+            <span class="bundle-chip">🌳 Parks</span>
+            <span class="bundle-chip">🎪 Vintage</span>
+            <span class="bundle-chip">🔍 Sherlock</span>
+            <span class="bundle-chip">🎭 Shakespeare</span>
+            <span class="bundle-chip">⚡ Harry Potter</span>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <button class="btn btn-gold btn-lg" onclick="buyBundle()">Get All 11 Maps — £5 →</button>
+            <span style="font-size:12.5px;color:rgba(255,255,255,.35);">Instant access · Lifetime code</span>
           </div>
         </div>
-      </a>
+        <div class="bundle-price-col">
+          <div class="bundle-old">£16.89 individually</div>
+          <div class="bundle-price">£5</div>
+          <div class="bundle-per">one-time payment · all 11 maps</div>
+          <div class="bundle-save-pill" style="margin:10px 0 14px;">💰 You save £11.89 — 70% off</div>
+          <button class="btn btn-gold btn-full" onclick="buyBundle()">Buy Bundle →</button>
+        </div>
+      </div>
+    </div>
 
-      <a href="#" class="product-card" onclick="addCart(event,'First 30 Days in London','£14.99')">
-        <div class="product-thumb" style="background:linear-gradient(135deg,#f0fff4,#dcf5e7);">📅</div>
-        <div class="product-body">
-          <div class="badge badge-gold" style="margin-bottom:8px;">Relocation</div>
-          <div class="product-title">First 30 Days in London</div>
-          <div class="product-desc">Day-by-day action plan — never feel lost or overwhelmed in your first month.</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">★★★★★ (183) · 44 pages</div>
-          <div class="product-foot">
-            <span class="price">£14.99</span>
-            <button class="btn-add">+ Add</button>
+    <!-- Individual map cards -->
+    <div class="maps-grid" id="maps-grid">
+
+      <div class="map-card fade-up" id="mc-pubs">
+        <div class="map-card-top">
+          <div class="map-card-emoji">🍺</div>
+          <div class="map-card-info">
+            <div class="map-card-name">Hidden London Pubs &amp; Bars</div>
+            <div class="map-card-desc">12 secret taverns where Dickens, Churchill &amp; Shakespeare drank.</div>
+            <div class="map-card-stops">6 stops · 3 hrs · Holborn to Southwark</div>
           </div>
         </div>
-      </a>
-
-      <a href="#" class="product-card" onclick="addCart(event,'Hidden London Photography Map','£12.99')">
-        <div class="product-thumb" style="background:linear-gradient(135deg,#fff0f4,#fde8ec);">
-          📸<span class="badge badge-navy abs-badge">Top Rated</span>
+        <div class="map-card-foot">
+          <div><span class="map-price-old">£4.99</span><span class="map-price">£1.49</span></div>
+          <button class="map-add-btn default" id="btn-pubs" onclick="addMap('pubs','Hidden Pubs &amp; Bars',1.49)">+ Add</button>
         </div>
-        <div class="product-body">
-          <div class="badge badge-gold" style="margin-bottom:8px;">Photography</div>
-          <div class="product-title">London Photography Spot Map</div>
-          <div class="product-desc">150+ locations with GPS coordinates, best times and camera settings.</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">★★★★★ (211) · 60 pages</div>
-          <div class="product-foot">
-            <span class="price">£12.99</span>
-            <button class="btn-add">+ Add</button>
+      </div>
+
+      <div class="map-card fade-up" id="mc-museums">
+        <div class="map-card-top">
+          <div class="map-card-emoji">🏛️</div>
+          <div class="map-card-info">
+            <div class="map-card-name">London's Greatest Museums</div>
+            <div class="map-card-desc">Exact rooms to head for — skip the queues and crowds.</div>
+            <div class="map-card-stops">5 stops · 2 hrs · All free entry</div>
           </div>
         </div>
-      </a>
+        <div class="map-card-foot">
+          <div><span class="map-price-old">£4.99</span><span class="map-price">£1.49</span></div>
+          <button class="map-add-btn default" id="btn-museums" onclick="addMap('museums','London Museums Guide',1.49)">+ Add</button>
+        </div>
+      </div>
 
-      <a href="#" class="product-card" onclick="addCart(event,'UK CV Template Bundle','£9.99')">
-        <div class="product-thumb" style="background:linear-gradient(135deg,#fffbf0,#fef3d0);">💼</div>
-        <div class="product-body">
-          <div class="badge badge-gold" style="margin-bottom:8px;">Job Search</div>
-          <div class="product-title">UK CV Template Bundle</div>
-          <div class="product-desc">5 ATS-optimised CV templates + 3 cover letter templates for the UK job market.</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">★★★★★ (312) · 5 templates</div>
-          <div class="product-foot">
-            <span class="price">£9.99</span>
-            <button class="btn-add">+ Add</button>
+      <div class="map-card fade-up" id="mc-monuments">
+        <div class="map-card-top">
+          <div class="map-card-emoji">🏰</div>
+          <div class="map-card-info">
+            <div class="map-card-name">Famous Monuments Guide</div>
+            <div class="map-card-desc">Free viewpoints &amp; hidden angles at every landmark.</div>
+            <div class="map-card-stops">5 stops · 2.5 hrs · Save £33+</div>
           </div>
         </div>
-      </a>
+        <div class="map-card-foot">
+          <div><span class="map-price-old">£4.99</span><span class="map-price">£1.49</span></div>
+          <button class="map-add-btn default" id="btn-monuments" onclick="addMap('monuments','Monuments Guide',1.49)">+ Add</button>
+        </div>
+      </div>
 
-      <a href="#" class="product-card" onclick="addCart(event,'UK Banking Setup Guide','£9.99')">
-        <div class="product-thumb" style="background:linear-gradient(135deg,#f0f8ff,#ddeeff);">🏦</div>
-        <div class="product-body">
-          <div class="badge badge-gold" style="margin-bottom:8px;">Relocation</div>
-          <div class="product-title">UK Banking Setup Guide</div>
-          <div class="product-desc">Open a UK bank account as a newcomer — Monzo, Starling and Barclays compared.</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">★★★★☆ (142) · 28 pages</div>
-          <div class="product-foot">
-            <span class="price">£9.99</span>
-            <button class="btn-add">+ Add</button>
+      <div class="map-card fade-up" id="mc-forts">
+        <div class="map-card-top">
+          <div class="map-card-emoji">⚔️</div>
+          <div class="map-card-info">
+            <div class="map-card-name">London Forts &amp; Defences</div>
+            <div class="map-card-desc">Roman walls to Cold War bunkers — hidden in plain sight.</div>
+            <div class="map-card-stops">4 stops · 2 hrs · Mostly free</div>
           </div>
         </div>
-      </a>
-
-      <a href="#" class="product-card" onclick="addCart(event,'Job Search Toolkit','£17.99')">
-        <div class="product-thumb" style="background:linear-gradient(135deg,#f5fff0,#e0f7e0);">
-          🧳<span class="badge badge-navy abs-badge">Bundle</span>
+        <div class="map-card-foot">
+          <div><span class="map-price-old">£3.99</span><span class="map-price">£0.99</span></div>
+          <button class="map-add-btn default" id="btn-forts" onclick="addMap('forts','Forts &amp; Defences',0.99)">+ Add</button>
         </div>
-        <div class="product-body">
-          <div class="badge badge-gold" style="margin-bottom:8px;">Job Search</div>
-          <div class="product-title">Job Search Toolkit</div>
-          <div class="product-desc">LinkedIn optimisation, interview prep, salary negotiation — complete UK job guide.</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">★★★★★ (267) · 80 pages</div>
-          <div class="product-foot">
-            <div><span class="price-old">£24.99</span><span class="price">£17.99</span></div>
-            <button class="btn-add">+ Add</button>
+      </div>
+
+      <div class="map-card fade-up" id="mc-ww">
+        <div class="map-card-top">
+          <div class="map-card-emoji">🎖️</div>
+          <div class="map-card-info">
+            <div class="map-card-name">WW1 &amp; WW2 Memories</div>
+            <div class="map-card-desc">Churchill's bunker, bombed churches, the Cenotaph.</div>
+            <div class="map-card-stops">5 stops · 2.5 hrs · Deeply moving</div>
           </div>
         </div>
-      </a>
+        <div class="map-card-foot">
+          <div><span class="map-price-old">£4.99</span><span class="map-price">£1.49</span></div>
+          <button class="map-add-btn default" id="btn-ww" onclick="addMap('ww','WW1 &amp; WW2 Memories',1.49)">+ Add</button>
+        </div>
+      </div>
 
+      <div class="map-card fade-up" id="mc-gardens">
+        <div class="map-card-top">
+          <div class="map-card-emoji">🌸</div>
+          <div class="map-card-info">
+            <div class="map-card-name">Secret London Gardens</div>
+            <div class="map-card-desc">Walled gardens, Kyoto water gardens, Tudor retreats.</div>
+            <div class="map-card-stops">5 stops · 2 hrs · Almost all free</div>
+          </div>
+        </div>
+        <div class="map-card-foot">
+          <div><span class="map-price-old">£3.99</span><span class="map-price">£0.99</span></div>
+          <button class="map-add-btn default" id="btn-gardens" onclick="addMap('gardens','Secret Gardens',0.99)">+ Add</button>
+        </div>
+      </div>
+
+      <div class="map-card fade-up" id="mc-parks">
+        <div class="map-card-top">
+          <div class="map-card-emoji">🌳</div>
+          <div class="map-card-info">
+            <div class="map-card-name">Royal Parks &amp; Hidden Spots</div>
+            <div class="map-card-desc">Pelicans, rose gardens, Speakers' Corner, hilltop views.</div>
+            <div class="map-card-stops">4 stops · 2 hrs · All free</div>
+          </div>
+        </div>
+        <div class="map-card-foot">
+          <div><span class="map-price-old">£3.99</span><span class="map-price">£0.99</span></div>
+          <button class="map-add-btn default" id="btn-parks" onclick="addMap('parks','Royal Parks Guide',0.99)">+ Add</button>
+        </div>
+      </div>
+
+      <div class="map-card fade-up" id="mc-vintage">
+        <div class="map-card-top">
+          <div class="map-card-emoji">🎪</div>
+          <div class="map-card-info">
+            <div class="map-card-name">Vintage Markets &amp; Gems</div>
+            <div class="map-card-desc">Arrive at 7am for trade prices — save £20–100 per find.</div>
+            <div class="map-card-stops">5 stops · Weekend mornings</div>
+          </div>
+        </div>
+        <div class="map-card-foot">
+          <div><span class="map-price-old">£4.99</span><span class="map-price">£1.49</span></div>
+          <button class="map-add-btn default" id="btn-vintage" onclick="addMap('vintage','Vintage Markets',1.49)">+ Add</button>
+        </div>
+      </div>
+
+      <div class="map-card fade-up" id="mc-sherlock">
+        <div class="map-card-top">
+          <div class="map-card-emoji">🔍</div>
+          <div class="map-card-info">
+            <div class="map-card-name">Sherlock Holmes London</div>
+            <div class="map-card-desc">Opium den streets, Victorian docks, the canonical pubs.</div>
+            <div class="map-card-stops">5 stops · 3 hrs · Baker St to Limehouse</div>
+          </div>
+        </div>
+        <div class="map-card-foot">
+          <div><span class="map-price-old">£4.99</span><span class="map-price">£1.49</span></div>
+          <button class="map-add-btn default" id="btn-sherlock" onclick="addMap('sherlock','Sherlock Holmes Map',1.49)">+ Add</button>
+        </div>
+      </div>
+
+      <div class="map-card fade-up" id="mc-shakespeare">
+        <div class="map-card-top">
+          <div class="map-card-emoji">🎭</div>
+          <div class="map-card-info">
+            <div class="map-card-name">Shakespeare's London</div>
+            <div class="map-card-desc">Where he lodged, drank and performed — actual streets.</div>
+            <div class="map-card-stops">5 stops · 2.5 hrs · £5 Globe groundlings</div>
+          </div>
+        </div>
+        <div class="map-card-foot">
+          <div><span class="map-price-old">£4.99</span><span class="map-price">£1.49</span></div>
+          <button class="map-add-btn default" id="btn-shakespeare" onclick="addMap('shakespeare','Shakespeare Map',1.49)">+ Add</button>
+        </div>
+      </div>
+
+      <div class="map-card fade-up" id="mc-hp">
+        <div class="map-card-top">
+          <div class="map-card-emoji">⚡</div>
+          <div class="map-card-info">
+            <div class="map-card-name">Harry Potter's London</div>
+            <div class="map-card-desc">Diagon Alley, Gringotts, Grimmauld Place — real locations.</div>
+            <div class="map-card-stops">6 stops · 3 hrs · King's Cross to Southwark</div>
+          </div>
+        </div>
+        <div class="map-card-foot">
+          <div><span class="map-price-old">£5.99</span><span class="map-price">£1.99</span></div>
+          <button class="map-add-btn default" id="btn-hp" onclick="addMap('hp','Harry Potter Map',1.99)">+ Add</button>
+        </div>
+      </div>
+
+    </div><!-- end maps-grid -->
+
+    <div style="text-align:center;padding-top:4px;">
+      <p style="color:rgba(255,255,255,.35);font-size:13px;margin-bottom:14px;">Get everything for just £5 — 70% off buying individually</p>
+      <button class="btn btn-gold btn-lg" onclick="buyBundle()">⚡ All 11 Maps for £5 →</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     CATEGORIES
+════════════════════════════════════════════════ -->
+<section class="section-sm cats-bar" id="products">
+  <div class="wrap">
+    <div class="cats-grid">
+      <a href="#" class="cat-card fade-up"><div class="cat-icon">🗺️</div><div class="cat-name">Relocation</div><div class="cat-count">4 guides</div></a>
+      <a href="#" class="cat-card fade-up"><div class="cat-icon">✈️</div><div class="cat-name">Travel</div><div class="cat-count">3 guides</div></a>
+      <a href="#" class="cat-card fade-up"><div class="cat-icon">📸</div><div class="cat-name">Photography</div><div class="cat-count">3 guides</div></a>
+      <a href="#" class="cat-card fade-up"><div class="cat-icon">💼</div><div class="cat-name">Job Search</div><div class="cat-count">3 toolkits</div></a>
     </div>
   </div>
 </section>
 
-<!-- ── LEAD MAGNET ── -->
+<!-- ════════════════════════════════════════════════
+     DIGITAL PRODUCTS
+════════════════════════════════════════════════ -->
+<section class="section products-bg">
+  <div class="wrap">
+    <div style="margin-bottom:28px;">
+      <span class="eyebrow">Digital Marketplace</span>
+      <h2 class="section-title">Guides, Maps &amp; Toolkits</h2>
+      <p class="section-sub">Instantly downloadable resources written for newcomers to London.</p>
+    </div>
+    <div class="products-grid">
+      <div class="product-card fade-up">
+        <div class="product-thumb" style="background:linear-gradient(135deg,#eef4ff,#dce8ff);">
+          📦<span class="badge badge-navy abs-badge">Bestseller</span>
+          <span class="badge badge-gold cat-badge">Relocation</span>
+        </div>
+        <div class="product-body">
+          <div class="product-title">London Relocation Starter Guide</div>
+          <div class="product-desc">68-page complete manual covering housing, banking, NHS &amp; utilities.</div>
+          <div class="product-meta-row"><span class="stars">★★★★★</span> (247) · 68 pages</div>
+          <div class="product-foot">
+            <div><span class="price-old">£29.99</span><span class="price">£19.99</span></div>
+            <button class="add-btn" onclick="addMap('reloc-guide','Relocation Starter Guide',19.99)">+ Add</button>
+          </div>
+        </div>
+      </div>
+      <div class="product-card fade-up">
+        <div class="product-thumb" style="background:linear-gradient(135deg,#f0fff4,#dcf5e7);">📅<span class="badge badge-navy abs-badge">Popular</span><span class="badge badge-gold cat-badge">Relocation</span></div>
+        <div class="product-body">
+          <div class="product-title">First 30 Days in London</div>
+          <div class="product-desc">Day-by-day action plan — never feel lost in your first month.</div>
+          <div class="product-meta-row"><span class="stars">★★★★★</span> (183) · 44 pages</div>
+          <div class="product-foot">
+            <span class="price">£14.99</span>
+            <button class="add-btn" onclick="addMap('30days','First 30 Days Guide',14.99)">+ Add</button>
+          </div>
+        </div>
+      </div>
+      <div class="product-card fade-up">
+        <div class="product-thumb" style="background:linear-gradient(135deg,#fff0f4,#fde8ec);">📸<span class="badge badge-navy abs-badge">Top Rated</span><span class="badge badge-gold cat-badge">Photography</span></div>
+        <div class="product-body">
+          <div class="product-title">London Photography Spot Map</div>
+          <div class="product-desc">150+ locations with GPS coordinates, best times &amp; camera settings.</div>
+          <div class="product-meta-row"><span class="stars">★★★★★</span> (211) · 60 pages</div>
+          <div class="product-foot">
+            <span class="price">£12.99</span>
+            <button class="add-btn" onclick="addMap('photo-map','Photography Spot Map',12.99)">+ Add</button>
+          </div>
+        </div>
+      </div>
+      <div class="product-card fade-up">
+        <div class="product-thumb" style="background:linear-gradient(135deg,#fffbf0,#fef3d0);">💼<span class="badge badge-gold cat-badge">Job Search</span></div>
+        <div class="product-body">
+          <div class="product-title">UK CV Template Bundle</div>
+          <div class="product-desc">5 ATS-optimised CV templates + 3 cover letter templates.</div>
+          <div class="product-meta-row"><span class="stars">★★★★★</span> (312) · 5 templates</div>
+          <div class="product-foot">
+            <span class="price">£9.99</span>
+            <button class="add-btn" onclick="addMap('cv-bundle','UK CV Template Bundle',9.99)">+ Add</button>
+          </div>
+        </div>
+      </div>
+      <div class="product-card fade-up">
+        <div class="product-thumb" style="background:linear-gradient(135deg,#f0f8ff,#ddeeff);">🏦<span class="badge badge-gold cat-badge">Relocation</span></div>
+        <div class="product-body">
+          <div class="product-title">UK Banking Setup Guide</div>
+          <div class="product-desc">Open a UK bank account as a newcomer — Monzo, Starling &amp; Barclays compared.</div>
+          <div class="product-meta-row"><span class="stars">★★★★☆</span> (142) · 28 pages</div>
+          <div class="product-foot">
+            <span class="price">£9.99</span>
+            <button class="add-btn" onclick="addMap('banking','UK Banking Guide',9.99)">+ Add</button>
+          </div>
+        </div>
+      </div>
+      <div class="product-card fade-up">
+        <div class="product-thumb" style="background:linear-gradient(135deg,#f5fff0,#e0f7e0);">🧳<span class="badge badge-navy abs-badge">Bundle</span><span class="badge badge-gold cat-badge">Job Search</span></div>
+        <div class="product-body">
+          <div class="product-title">Job Search Toolkit</div>
+          <div class="product-desc">LinkedIn, interview prep, salary negotiation — complete UK job guide.</div>
+          <div class="product-meta-row"><span class="stars">★★★★★</span> (267) · 80 pages</div>
+          <div class="product-foot">
+            <div><span class="price-old">£24.99</span><span class="price">£17.99</span></div>
+            <button class="add-btn" onclick="addMap('job-toolkit','Job Search Toolkit',17.99)">+ Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     LEAD MAGNET
+════════════════════════════════════════════════ -->
 <section class="section-sm lead-bg" id="lead">
   <div class="wrap-sm">
     <div class="lead-box">
-      <div class="lead-glow"></div>
-      <div style="font-size:44px;margin-bottom:14px;">🎁</div>
+      <div style="font-size:40px;margin-bottom:12px;position:relative;z-index:1;">🎁</div>
       <h3>Free: London Arrival Checklist</h3>
       <p>Our 47-point checklist used by 8,000+ arrivals — covering your first week, month and 3 months. Completely free.</p>
       <form class="lead-form" onsubmit="submitLead(event)">
-        <input class="lead-input" type="email" placeholder="Your email address" required id="lead-email"/>
+        <input type="email" placeholder="Your email address" required id="lead-email"/>
         <button type="submit" class="btn btn-gold">Get Free Guide</button>
       </form>
       <p class="lead-small">No spam. Unsubscribe anytime. GDPR compliant.</p>
@@ -744,380 +1221,743 @@
   </div>
 </section>
 
-<!-- ── CONSULTATIONS ── -->
+<!-- ════════════════════════════════════════════════
+     CONSULTATIONS
+════════════════════════════════════════════════ -->
 <section class="section consult-bg" id="consultations">
   <div class="wrap">
-    <div style="text-align:center;margin-bottom:40px;">
-      <div class="eyebrow" style="justify-content:center;display:flex;">Expert Sessions</div>
+    <div style="text-align:center;margin-bottom:32px;">
+      <span class="eyebrow">Expert Sessions</span>
       <h2 class="section-title" style="text-align:center;">1-to-1 Consultations</h2>
-      <p class="section-sub" style="margin:0 auto;">Book a video session with a London relocation specialist — visa, housing, banking, education and more.</p>
+      <p class="section-sub" style="margin:0 auto;">Video sessions with London relocation specialists — visa, housing, banking, education &amp; more.</p>
     </div>
     <div class="consult-grid">
-
-      <div class="consult-card">
+      <div class="consult-card fade-up">
         <div class="tier-name">Bronze</div>
         <div class="tier-dur">30 minutes · Video call</div>
         <div class="tier-price">£49</div>
-        <ul class="tier-feats">
-          <li><span class="check">✓</span> Introductory consultation</li>
-          <li><span class="check">✓</span> Q&amp;A session</li>
-          <li><span class="check">✓</span> Resource pack PDF</li>
-          <li><span class="check">✓</span> Email summary</li>
-        </ul>
-        <a href="#" class="consult-btn" onclick="bookConsult(event,'Bronze')">Book Bronze →</a>
+        <ul class="tier-feats"><li>Introductory consultation</li><li>Q&amp;A session</li><li>Resource pack PDF</li><li>Email summary</li></ul>
+        <button class="consult-btn" onclick="addMap('consult-bronze','Bronze Consultation (30min)',49)">Book Bronze →</button>
       </div>
-
-      <div class="consult-card featured">
+      <div class="consult-card featured fade-up">
         <div class="popular-tag">Most Popular</div>
         <div class="tier-name">Silver</div>
         <div class="tier-dur">60 minutes · Video call</div>
         <div class="tier-price">£89</div>
-        <ul class="tier-feats">
-          <li><span class="check">✓</span> Full consultation</li>
-          <li><span class="check">✓</span> Personal action plan</li>
-          <li><span class="check">✓</span> Follow-up email</li>
-          <li><span class="check">✓</span> Resource bundle</li>
-          <li><span class="check">✓</span> Priority booking</li>
-        </ul>
-        <a href="#" class="consult-btn" onclick="bookConsult(event,'Silver')">Book Silver →</a>
+        <ul class="tier-feats"><li>Full consultation</li><li>Personal action plan</li><li>Follow-up email</li><li>Resource bundle</li><li>Priority booking</li></ul>
+        <button class="consult-btn" onclick="addMap('consult-silver','Silver Consultation (60min)',89)">Book Silver →</button>
       </div>
-
-      <div class="consult-card">
+      <div class="consult-card fade-up">
         <div class="tier-name">Gold</div>
         <div class="tier-dur">90 minutes · Video call</div>
         <div class="tier-price">£129</div>
-        <ul class="tier-feats">
-          <li><span class="check">✓</span> Deep-dive session</li>
-          <li><span class="check">✓</span> Document review</li>
-          <li><span class="check">✓</span> 30-day email support</li>
-          <li><span class="check">✓</span> Premium resource pack</li>
-          <li><span class="check">✓</span> Session recording</li>
-        </ul>
-        <a href="#" class="consult-btn" onclick="bookConsult(event,'Gold')">Book Gold →</a>
+        <ul class="tier-feats"><li>Deep-dive session</li><li>Document review</li><li>30-day email support</li><li>Premium resource pack</li><li>Session recording</li></ul>
+        <button class="consult-btn" onclick="addMap('consult-gold','Gold Consultation (90min)',129)">Book Gold →</button>
       </div>
-
     </div>
-    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:20px;">
-      🔒 Secure payment via Stripe · Instant booking confirmation · Reschedule up to 24 hours before
-    </p>
+    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:18px;">🔒 Stripe · Instant confirmation · Reschedule up to 24h before</p>
   </div>
 </section>
 
-<!-- ── TOOLS ── -->
-<section class="section tools-bg" id="tools">
-  <div class="wrap">
-    <div style="margin-bottom:36px;">
-      <div class="eyebrow">Free Tools</div>
-      <h2 class="section-title">Interactive London Calculators</h2>
-      <p class="section-sub">Plan your finances and commute before you arrive — completely free.</p>
-    </div>
-    <div class="tools-grid">
-      <div class="tool-card">
-        <div class="tool-icon">🏙️</div>
-        <div class="tool-name">Cost of Living Calculator</div>
-        <div class="tool-desc">Adjust rent, food, transport and utilities to get a personalised monthly and yearly cost estimate.</div>
-      </div>
-      <div class="tool-card">
-        <div class="tool-icon">🚇</div>
-        <div class="tool-name">Commute Time Finder</div>
-        <div class="tool-desc">Pick your home and work zones to see estimated travel time, single fare and monthly TfL cost.</div>
-      </div>
-      <div class="tool-card">
-        <div class="tool-icon">📊</div>
-        <div class="tool-name">Budget Planner</div>
-        <div class="tool-desc">Enter your take-home income and instantly see how much you can save each month in London.</div>
-      </div>
-    </div>
-    <div style="text-align:center;margin-top:28px;">
-      <a href="#" class="btn btn-gold" onclick="showToast('Tools launching soon! Sign up for early access.');return false;">
-        Try Free Tools →
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ── TESTIMONIALS ── -->
+<!-- ════════════════════════════════════════════════
+     TESTIMONIALS
+════════════════════════════════════════════════ -->
 <section class="section testi-bg">
   <div class="wrap">
-    <div style="text-align:center;margin-bottom:36px;">
-      <div class="eyebrow" style="text-align:center;">Testimonials</div>
+    <div style="text-align:center;margin-bottom:28px;">
+      <span class="eyebrow">Testimonials</span>
       <h2 class="section-title" style="text-align:center;">Trusted by Thousands of New Londoners</h2>
     </div>
     <div class="testi-grid">
-      <div class="testi-card">
-        <div class="stars">★★★★★</div>
-        <p class="testi-text">"The Relocation Starter Guide saved me weeks of confusion. I had my bank account, NI number and NHS GP sorted in the first 10 days."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">🇮🇳</div>
-          <div>
-            <div class="testi-name">Priya Sharma</div>
-            <div class="testi-from">Mumbai → London</div>
-          </div>
-        </div>
-      </div>
-      <div class="testi-card">
-        <div class="stars">★★★★★</div>
-        <p class="testi-text">"As a Skilled Worker visa holder the banking guide was invaluable. Opened my Monzo in the airport queue — it worked perfectly."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">🇳🇬</div>
-          <div>
-            <div class="testi-name">Adebayo Okonkwo</div>
-            <div class="testi-from">Lagos → London</div>
-          </div>
-        </div>
-      </div>
-      <div class="testi-card">
-        <div class="stars">★★★★★</div>
-        <p class="testi-text">"Booked the Gold consultation before moving and it was worth every penny. My consultant helped with the accommodation search remotely."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">🇧🇩</div>
-          <div>
-            <div class="testi-name">Tanvir Ahmed</div>
-            <div class="testi-from">Dhaka → London</div>
-          </div>
-        </div>
-      </div>
-      <div class="testi-card">
-        <div class="stars">★★★★★</div>
-        <p class="testi-text">"The photography spot map is genuinely stunning. Found locations I'd never seen on Instagram. Worth every penny for Bankside alone."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">🇵🇰</div>
-          <div>
-            <div class="testi-name">Fatima Malik</div>
-            <div class="testi-from">Karachi → London</div>
-          </div>
-        </div>
-      </div>
+      <div class="testi-card fade-up"><div class="testi-stars">★★★★★</div><p class="testi-text">"The Relocation Guide saved me weeks. I had my bank account, NI number and NHS GP sorted in the first 10 days."</p><div class="testi-author"><div class="testi-avatar">🇮🇳</div><div><div class="testi-name">Priya Sharma</div><div class="testi-from">Mumbai → London</div></div></div></div>
+      <div class="testi-card fade-up"><div class="testi-stars">★★★★★</div><p class="testi-text">"As a Skilled Worker visa holder the banking guide was invaluable. Opened my Monzo in the airport queue!"</p><div class="testi-author"><div class="testi-avatar">🇳🇬</div><div><div class="testi-name">Adebayo Okonkwo</div><div class="testi-from">Lagos → London</div></div></div></div>
+      <div class="testi-card fade-up"><div class="testi-stars">★★★★★</div><p class="testi-text">"Booked the Gold consultation before moving. My consultant helped with accommodation search remotely — worth every penny."</p><div class="testi-author"><div class="testi-avatar">🇧🇩</div><div><div class="testi-name">Tanvir Ahmed</div><div class="testi-from">Dhaka → London</div></div></div></div>
+      <div class="testi-card fade-up"><div class="testi-stars">★★★★★</div><p class="testi-text">"The Harry Potter map is extraordinary. Found all filming locations in one afternoon — and the Sherlock map is even better."</p><div class="testi-author"><div class="testi-avatar">🇵🇰</div><div><div class="testi-name">Fatima Malik</div><div class="testi-from">Karachi → London</div></div></div></div>
     </div>
   </div>
 </section>
 
-<!-- ── BLOG ── -->
+<!-- ════════════════════════════════════════════════
+     BLOG
+════════════════════════════════════════════════ -->
 <section class="section blog-bg" id="blog">
   <div class="wrap">
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:36px;gap:16px;flex-wrap:wrap;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div class="eyebrow">London Lens Blog</div>
+        <span class="eyebrow">London Lens Blog</span>
         <h2 class="section-title">Guides for New Londoners</h2>
-        <p class="section-sub">Expert articles on housing, banking, transport and culture.</p>
       </div>
     </div>
     <div class="blog-grid">
-      <a href="#" class="blog-card">
-        <div class="blog-thumb">🏘️</div>
-        <div class="blog-body">
-          <div class="blog-meta"><span class="badge badge-gold">Housing</span> &nbsp;6 min read</div>
-          <div class="blog-title">Best Areas to Live in London for New Arrivals</div>
-          <div class="blog-excerpt">Comparing East, South and North London across commute, cost and community feel.</div>
-        </div>
-      </a>
-      <a href="#" class="blog-card">
-        <div class="blog-thumb">💷</div>
-        <div class="blog-body">
-          <div class="blog-meta"><span class="badge badge-gold">Finance</span> &nbsp;8 min read</div>
-          <div class="blog-title">The Real Cost of Living in London (2024)</div>
-          <div class="blog-excerpt">Rent, food, transport, entertainment — a realistic monthly breakdown with actual numbers.</div>
-        </div>
-      </a>
-      <a href="#" class="blog-card">
-        <div class="blog-thumb">🏦</div>
-        <div class="blog-body">
-          <div class="blog-meta"><span class="badge badge-gold">Banking</span> &nbsp;5 min read</div>
-          <div class="blog-title">UK Bank Accounts for New Arrivals: The 2024 Guide</div>
-          <div class="blog-excerpt">Which account you can open without a UK credit history — we tested them all.</div>
-        </div>
-      </a>
+      <a href="#" class="blog-card fade-up"><div class="blog-thumb">🏘️</div><div class="blog-body"><div class="blog-meta"><span class="badge badge-gold">Housing</span> &nbsp;6 min read</div><div class="blog-title">Best Areas to Live in London for New Arrivals</div><div class="blog-excerpt">Comparing East, South and North London across commute, cost and community.</div></div></a>
+      <a href="#" class="blog-card fade-up"><div class="blog-thumb">💷</div><div class="blog-body"><div class="blog-meta"><span class="badge badge-gold">Finance</span> &nbsp;8 min read</div><div class="blog-title">The Real Cost of Living in London (2024)</div><div class="blog-excerpt">Rent, food, transport, entertainment — a realistic monthly breakdown.</div></div></a>
+      <a href="#" class="blog-card fade-up"><div class="blog-thumb">🏦</div><div class="blog-body"><div class="blog-meta"><span class="badge badge-gold">Banking</span> &nbsp;5 min read</div><div class="blog-title">UK Bank Accounts for New Arrivals: 2024 Guide</div><div class="blog-excerpt">Which account you can open without UK credit history.</div></div></a>
     </div>
   </div>
 </section>
 
-<!-- ── MEMBERSHIP ── -->
+<!-- ════════════════════════════════════════════════
+     MEMBERSHIP
+════════════════════════════════════════════════ -->
 <section class="section mem-bg" id="membership">
   <div class="wrap">
-    <div style="text-align:center;margin-bottom:40px;">
-      <div class="eyebrow" style="text-align:center;">Membership</div>
+    <div style="text-align:center;margin-bottom:32px;">
+      <span class="eyebrow">Membership</span>
       <h2 class="section-title" style="text-align:center;">Unlock More with a Plan</h2>
       <p class="section-sub" style="margin:0 auto;">Exclusive content, maps, consultation discounts and community access.</p>
     </div>
     <div class="mem-grid">
-
-      <div class="mem-card">
-        <div class="mem-header">
-          <div class="mem-name">Free</div>
-          <div class="mem-price">£0<span class="mem-per"></span></div>
-        </div>
-        <ul class="mem-feats">
-          <li><span class="yes">✓</span> Blog &amp; free articles</li>
-          <li><span class="yes">✓</span> Free tools &amp; calculators</li>
-          <li><span class="yes">✓</span> London Arrival Checklist</li>
-          <li><span class="no">✕</span> Premium guides</li>
-          <li><span class="no">✕</span> Exclusive maps</li>
-          <li><span class="no">✕</span> Consultation discounts</li>
-        </ul>
-        <div class="mem-foot">
-          <a href="#lead" class="mem-btn">Get Started Free</a>
-        </div>
+      <div class="mem-card fade-up">
+        <div class="mem-header"><div class="mem-name">Free</div><div class="mem-price">£0<span class="mem-per"></span></div></div>
+        <ul class="mem-feats"><li><span class="yes">✓</span> Blog &amp; free articles</li><li><span class="yes">✓</span> Free tools &amp; calculators</li><li><span class="yes">✓</span> London Arrival Checklist</li><li><span class="no">✕</span> Premium guides</li><li><span class="no">✕</span> Exclusive maps</li><li><span class="no">✕</span> Consultation discounts</li></ul>
+        <div class="mem-foot"><a href="#lead" class="mem-btn">Get Started Free</a></div>
       </div>
-
-      <div class="mem-card featured">
+      <div class="mem-card featured fade-up">
         <div class="mem-pop">MOST POPULAR</div>
-        <div class="mem-header">
-          <div class="mem-name">Premium</div>
-          <div class="mem-price">£12<span class="mem-per">/month</span></div>
-        </div>
-        <ul class="mem-feats">
-          <li><span class="yes">✓</span> Everything in Free</li>
-          <li><span class="yes">✓</span> All premium guides</li>
-          <li><span class="yes">✓</span> Exclusive borough maps</li>
-          <li><span class="yes">✓</span> Early access to new releases</li>
-          <li><span class="yes">✓</span> Email community</li>
-          <li><span class="no">✕</span> Consultation discounts</li>
-        </ul>
-        <div class="mem-foot">
-          <a href="#" class="mem-btn" onclick="showToast('Premium launch coming soon — join the waitlist!');return false;">Start Premium →</a>
-        </div>
+        <div class="mem-header"><div class="mem-name">Premium</div><div class="mem-price">£12<span class="mem-per">/mo</span></div></div>
+        <ul class="mem-feats"><li><span class="yes">✓</span> Everything in Free</li><li><span class="yes">✓</span> All premium guides</li><li><span class="yes">✓</span> Exclusive borough maps</li><li><span class="yes">✓</span> Early access new releases</li><li><span class="yes">✓</span> Email community</li><li><span class="no">✕</span> Consultation discounts</li></ul>
+        <div class="mem-foot"><button class="mem-btn" onclick="addMap('premium','Premium Membership (1 month)',12)">Start Premium →</button></div>
       </div>
-
-      <div class="mem-card">
-        <div class="mem-header">
-          <div class="mem-name">VIP</div>
-          <div class="mem-price">£29<span class="mem-per">/month</span></div>
-        </div>
-        <ul class="mem-feats">
-          <li><span class="yes">✓</span> Everything in Premium</li>
-          <li><span class="yes">✓</span> 20% consultation discount</li>
-          <li><span class="yes">✓</span> Private community access</li>
-          <li><span class="yes">✓</span> Monthly live Q&amp;A</li>
-          <li><span class="yes">✓</span> Priority support</li>
-          <li><span class="yes">✓</span> Session recording access</li>
-        </ul>
-        <div class="mem-foot">
-          <a href="#" class="mem-btn" onclick="showToast('VIP launch coming soon — join the waitlist!');return false;">Go VIP →</a>
-        </div>
+      <div class="mem-card fade-up">
+        <div class="mem-header"><div class="mem-name">VIP</div><div class="mem-price">£29<span class="mem-per">/mo</span></div></div>
+        <ul class="mem-feats"><li><span class="yes">✓</span> Everything in Premium</li><li><span class="yes">✓</span> 20% consultation discount</li><li><span class="yes">✓</span> Private community</li><li><span class="yes">✓</span> Monthly live Q&amp;A</li><li><span class="yes">✓</span> Priority support</li><li><span class="yes">✓</span> Exclusive VIP resources</li></ul>
+        <div class="mem-foot"><button class="mem-btn" onclick="addMap('vip','VIP Membership (1 month)',29)">Go VIP →</button></div>
       </div>
-
     </div>
-    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:20px;">
-      💳 Powered by Stripe · UK VAT included · Cancel anytime
-    </p>
+    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:18px;">💳 Powered by Stripe · UK VAT included · Cancel anytime</p>
   </div>
 </section>
 
-<!-- ── CTA BANNER ── -->
-<section class="cta-banner">
+<!-- ════════════════════════════════════════════════
+     CTA
+════════════════════════════════════════════════ -->
+<div class="cta-banner">
   <div class="wrap-sm">
-    <div style="font-size:44px;margin-bottom:16px;">🏙️</div>
+    <div style="font-size:40px;margin-bottom:14px;">🏙️</div>
     <h2>Ready to Make London <em>Home</em>?</h2>
-    <p>Join thousands of newcomers who've used London Lens to settle in faster, smarter and with less stress.</p>
+    <p>Join thousands of newcomers who use London Lens to settle in faster, smarter and with less stress.</p>
     <div class="cta-btns">
-      <a href="#products" class="btn btn-gold">Shop All Guides →</a>
-      <a href="#lead" class="btn btn-outline">Get Free Checklist</a>
+      <a href="#maps" class="btn btn-gold btn-lg">🗺️ Shop All Maps →</a>
+      <a href="#lead" class="btn btn-outline-white btn-lg">Get Free Checklist</a>
     </div>
   </div>
-</section>
+</div>
 
-<!-- ── FOOTER ── -->
+<!-- ════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════ -->
 <footer>
-  <div class="footer-inner">
-    <div>
-      <div class="footer-logo">🏙️ London Lens</div>
-      <p class="footer-tagline">Your trusted platform for relocating to London from Bangladesh, India, Pakistan, Nigeria and beyond.</p>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">🏙️ London Lens</div>
+        <p class="footer-tagline">Your trusted platform for relocating to London from Bangladesh, India, Pakistan, Nigeria and beyond.</p>
+      </div>
+      <div>
+        <div class="footer-head">Platform</div>
+        <a href="#maps"    class="footer-link">Maps</a>
+        <a href="#products" class="footer-link">Products</a>
+        <a href="#consultations" class="footer-link">Consultations</a>
+        <a href="#membership" class="footer-link">Membership</a>
+        <a href="#blog"    class="footer-link">Blog</a>
+      </div>
+      <div>
+        <div class="footer-head">Resources</div>
+        <a href="#" class="footer-link">London Guides</a>
+        <a href="#" class="footer-link">Banking Guide</a>
+        <a href="#" class="footer-link">Housing Tips</a>
+        <a href="#" class="footer-link">Visa Info</a>
+        <a href="#" class="footer-link">Job Search</a>
+      </div>
+      <div>
+        <div class="footer-head">Company</div>
+        <a href="#" class="footer-link">About</a>
+        <a href="#" class="footer-link">Contact</a>
+        <a href="#" class="footer-link">FAQ</a>
+        <a href="#" class="footer-link">Privacy Policy</a>
+        <a href="#" class="footer-link">Terms</a>
+      </div>
     </div>
-    <div>
-      <div class="footer-head">Platform</div>
-      <a href="#products" class="footer-link">Products</a>
-      <a href="#consultations" class="footer-link">Consultations</a>
-      <a href="#tools" class="footer-link">Free Tools</a>
-      <a href="#membership" class="footer-link">Membership</a>
-      <a href="#blog" class="footer-link">Blog</a>
+    <div class="footer-bottom">
+      <span>© 2024 London Lens Ltd · Registered in England &amp; Wales</span>
+      <span>🔒 Stripe Secured · 🇬🇧 London, UK · GDPR Compliant</span>
     </div>
-    <div>
-      <div class="footer-head">Resources</div>
-      <a href="#" class="footer-link">London Guides</a>
-      <a href="#" class="footer-link">Banking Guide</a>
-      <a href="#" class="footer-link">Housing Tips</a>
-      <a href="#" class="footer-link">Visa Info</a>
-      <a href="#" class="footer-link">Job Search</a>
-    </div>
-    <div>
-      <div class="footer-head">Company</div>
-      <a href="#" class="footer-link">About</a>
-      <a href="#" class="footer-link">Contact</a>
-      <a href="#" class="footer-link">FAQ</a>
-      <a href="#" class="footer-link">Privacy Policy</a>
-      <a href="#" class="footer-link">Terms of Service</a>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <span>© 2024 London Lens Ltd · Registered in England &amp; Wales</span>
-    <span>🔒 Stripe Secured &nbsp;·&nbsp; 🇬🇧 London, UK &nbsp;·&nbsp; GDPR Compliant</span>
   </div>
 </footer>
 
-<!-- ── TOAST ── -->
+<!-- ════════════════════════════════════════════════
+     PAYMENT MODAL — FULLY FUNCTIONAL WITH STRIPE
+════════════════════════════════════════════════ -->
+<div class="pay-overlay" id="pay-overlay">
+<div class="pay-modal" id="pay-modal">
+  <span class="pay-modal-handle"></span>
+
+  <!-- Header -->
+  <div class="pay-header">
+    <h3 id="pay-header-title">🔒 Secure Checkout</h3>
+    <button class="pay-close" onclick="closePayModal()">✕</button>
+  </div>
+
+  <!-- Form -->
+  <div id="pay-form-area">
+  <div class="pay-body">
+
+    <!-- Order -->
+    <div class="order-summary">
+      <div class="order-label">Order Summary</div>
+      <div id="order-items-list"></div>
+      <div class="order-total-row">
+        <span class="order-total-label">Total</span>
+        <span class="order-total-val" id="order-total-val">£0.00</span>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="fields-row">
+      <div class="field">
+        <label>First Name *</label>
+        <input type="text" id="f-fname" placeholder="Sarah" autocomplete="given-name"/>
+      </div>
+      <div class="field">
+        <label>Last Name *</label>
+        <input type="text" id="f-lname" placeholder="Ahmed" autocomplete="family-name"/>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:18px;">
+      <label>Email Address *</label>
+      <input type="email" id="f-email" placeholder="you@example.com" autocomplete="email"/>
+      <div class="field-hint">Your access code will be sent here</div>
+    </div>
+
+    <!-- Payment method tabs -->
+    <div class="pm-label-text">Choose Payment Method</div>
+    <div class="pm-tabs">
+      <div class="pm-tab active" id="pmt-card" onclick="switchPM('card')">
+        <div class="pm-tab-icon">💳</div>
+        <div class="pm-tab-name">Card</div>
+      </div>
+      <div class="pm-tab" id="pmt-stripe" onclick="switchPM('stripe')">
+        <div class="pm-tab-icon" style="font-size:14px;background:#635bff;color:#fff;padding:3px 6px;border-radius:4px;font-weight:900;">S</div>
+        <div class="pm-tab-name">Stripe</div>
+      </div>
+      <div class="pm-tab" id="pmt-paypal" onclick="switchPM('paypal')">
+        <div class="pm-tab-icon" style="font-size:13px;font-weight:900;line-height:1;"><span style="color:#003087;">Pay</span><span style="color:#009cde;">Pal</span></div>
+        <div class="pm-tab-name">PayPal</div>
+      </div>
+      <div class="pm-tab" id="pmt-wallet" onclick="switchPM('wallet')">
+        <div class="pm-tab-icon">📱</div>
+        <div class="pm-tab-name">Wallets</div>
+      </div>
+    </div>
+
+    <!-- CARD PANEL -->
+    <div class="pay-panel active" id="panel-card">
+      <div class="card-brands">
+        <div class="card-brand brand-visa">VISA</div>
+        <div class="card-brand brand-mc">●● MC</div>
+        <div class="card-brand brand-amex">AMEX</div>
+        <div class="card-brand brand-maestro">Maestro</div>
+        <span style="font-size:11px;color:var(--muted);">All major cards</span>
+      </div>
+      <div class="field">
+        <label>Card Number</label>
+        <div class="field-icon">
+          <input type="tel" id="card-number" placeholder="1234  5678  9012  3456" maxlength="19" autocomplete="cc-number" oninput="fmtCard(this)"/>
+          <span class="fi" id="card-type-fi">💳</span>
+        </div>
+      </div>
+      <div class="fields-row">
+        <div class="field">
+          <label>Expiry</label>
+          <input type="tel" id="card-expiry" placeholder="MM / YY" maxlength="7" autocomplete="cc-exp" oninput="fmtExpiry(this)"/>
+        </div>
+        <div class="field">
+          <label>CVC</label>
+          <div class="field-icon">
+            <input type="tel" id="card-cvc" placeholder="•••" maxlength="4" autocomplete="cc-csc"/>
+            <span class="fi">🔒</span>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Name on Card</label>
+        <input type="text" id="card-name" placeholder="SARAH AHMED" autocomplete="cc-name" style="text-transform:uppercase;"/>
+      </div>
+    </div>
+
+    <!-- STRIPE PANEL -->
+    <div class="pay-panel" id="panel-stripe">
+      <div style="background:#f7faff;border:1px solid #d0deff;border-radius:10px;padding:18px;margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:700;color:#425466;letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;">
+          🔒 Stripe Secure Payment
+        </div>
+        <!-- Stripe Elements will mount here in production -->
+        <div id="stripe-card-element">
+          <div style="color:#aab7c4;font-size:14px;display:flex;align-items:center;gap:8px;">
+            <span>💳</span>
+            <span>Card details appear here via Stripe Elements</span>
+          </div>
+        </div>
+        <div id="stripe-error"></div>
+        <div style="font-size:11px;color:#6b7280;margin-top:12px;text-align:center;">
+          Powered by <strong style="color:#635bff;">Stripe</strong> — London Lens never sees your card number
+        </div>
+      </div>
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;font-size:12px;color:#1e40af;margin-bottom:14px;">
+        ℹ️ <strong>For developers:</strong> Add your Stripe Publishable Key below and mount <code>stripe.elements()</code> to <code>#stripe-card-element</code> to enable live card processing.
+      </div>
+    </div>
+
+    <!-- PAYPAL PANEL -->
+    <div class="pay-panel" id="panel-paypal">
+      <div style="background:#f0f8ff;border:1px solid #b3d4f5;border-radius:10px;padding:20px;text-align:center;margin-bottom:14px;">
+        <div style="font-size:26px;font-weight:900;margin-bottom:8px;">
+          <span style="color:#003087;">Pay</span><span style="color:#009cde;">Pal</span>
+        </div>
+        <p style="font-size:13px;color:#425466;margin-bottom:16px;line-height:1.55;">Pay securely with your PayPal account or any card via PayPal Guest Checkout — no PayPal account required.</p>
+        <!-- PayPal SDK mounts here in production -->
+        <div id="paypal-container"></div>
+        <div style="background:#ffc439;border-radius:8px;padding:12px;font-weight:800;font-size:15px;color:#003087;cursor:pointer;margin-bottom:8px;" onclick="processPay()">
+          <span style="font-size:18px;">PayPal</span>
+        </div>
+        <div style="background:#0070ba;border-radius:8px;padding:11px;font-weight:700;font-size:14px;color:#fff;cursor:pointer;" onclick="processPay()">
+          Pay with Debit or Credit Card
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--muted);text-align:center;">
+        ℹ️ Add <code>paypal.Buttons().render('#paypal-container')</code> with your Client ID for live PayPal
+      </div>
+    </div>
+
+    <!-- WALLET PANEL -->
+    <div class="pay-panel" id="panel-wallet">
+      <div class="wallet-btns">
+        <button class="apple-btn" onclick="processPay()">
+          <svg width="20" height="20" viewBox="0 0 814 1000" fill="white"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.5-155.5-122.7C46.7 734.6 0 553.2 0 480.4c0-217.9 142.2-333.5 282.1-333.5 74.7 0 136.7 49.2 184.5 49.2 45.4 0 117.3-52.3 200.9-52.3zm-166.4-168c-5.8-32.2-48.9-116.9-125.7-116.9-7.1 0-14.2.6-21.3 1.9-64.4 10.3-141.2 87.1-141.2 161.8 0 10.9 1.9 21.9 4.5 25.8 5.8.6 12.3 1.3 18.7 1.3 64.4 0 142.8-70.6 165.3-73.8z"/></svg>
+          Apple Pay
+        </button>
+        <button class="gpay-btn" onclick="processPay()">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Google Pay
+        </button>
+      </div>
+      <p class="wallet-note">Apple Pay works on Safari (iOS/Mac). Google Pay works on Chrome. Both require a saved payment method in your device wallet.</p>
+    </div>
+
+    <!-- Submit (hidden for PayPal) -->
+    <button class="pay-submit" id="pay-submit-btn" onclick="processPay()">
+      🔒 Complete Purchase — <span id="pay-btn-amount">£0.00</span>
+    </button>
+
+    <div class="pay-secure">🔒 256-bit SSL · Stripe UK · GDPR Compliant · Instant access</div>
+    <div class="provider-logos">
+      <span class="prov" style="color:#635bff;font-weight:900;">Stripe</span>
+      <span class="prov" style="color:#003087;">PayPal</span>
+      <span class="prov" style="color:#1a1f71;">VISA</span>
+      <span class="prov" style="color:#eb001b;">Mastercard</span>
+      <span class="prov" style="color:#2e77bc;">AMEX</span>
+      <span class="prov">🍎 Pay</span>
+      <span class="prov">G Pay</span>
+    </div>
+
+  </div>
+  </div><!-- end pay-form-area -->
+
+  <!-- Success screen -->
+  <div class="pay-success" id="pay-success">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Payment Successful!</div>
+    <p class="success-sub">Your maps are ready. Use the code below to unlock the interactive platform at any time. A confirmation email has been sent.</p>
+    <div class="access-code-box">
+      <div class="access-code-label">Your Lifetime Access Code</div>
+      <div class="access-code-val" id="success-code">LL·····</div>
+    </div>
+    <div style="background:var(--cream);border-radius:10px;padding:12px 16px;margin-bottom:20px;text-align:left;">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">What you purchased</div>
+      <div id="success-items" style="font-size:13px;color:var(--ink);"></div>
+    </div>
+    <div class="success-actions">
+      <a href="london-maps.html" class="btn btn-gold btn-lg">Open My Maps →</a>
+      <button class="btn btn-navy" onclick="copyCode()">📋 Copy Code</button>
+    </div>
+    <p style="font-size:11.5px;color:var(--muted);margin-top:16px;">Save your code safely — you'll need it every time you access the premium maps platform.</p>
+    <button onclick="closePayModal()" style="margin-top:12px;background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline;">Close</button>
+  </div>
+
+</div><!-- end pay-modal -->
+</div><!-- end pay-overlay -->
+
+<!-- Toast -->
 <div id="toast"></div>
 
+<!-- ════════════════════════════════════════════════
+     JAVASCRIPT — FULL IMPLEMENTATION
+════════════════════════════════════════════════ -->
 <script>
-  // ── TOAST ──
-  function showToast(msg) {
-    var t = document.getElementById('toast');
-    t.innerHTML = '<span style="color:var(--gold);font-size:16px;">✓</span> ' + msg;
-    t.classList.add('show');
-    setTimeout(function(){ t.classList.remove('show'); }, 3500);
+'use strict';
+
+/* ─── STRIPE SETUP ─────────────────────────────────────────────────
+   Replace 'pk_test_...' with your live Stripe publishable key.
+   Generate one at: https://dashboard.stripe.com/apikeys
+   For server-side charge, POST to your backend with the PaymentIntent.
+────────────────────────────────────────────────────────────────── */
+var STRIPE_PK = 'pk_test_51ExampleKeyReplaceWithYours000000000000000000000000';
+var stripe = null;
+try { stripe = Stripe(STRIPE_PK); } catch(e) { /* SDK not loaded or key invalid */ }
+
+/* ─── CART STATE ──────────────────────────────────────────────── */
+var cart = {};
+
+function addMap(id, name, price) {
+  if (cart[id]) {
+    // toggle off
+    delete cart[id];
+    var btn = document.getElementById('btn-' + id);
+    var card = document.getElementById('mc-' + id);
+    if (btn) { btn.textContent = '+ Add'; btn.className = 'map-add-btn default'; }
+    if (card) card.classList.remove('in-cart');
+  } else {
+    cart[id] = { name: name, price: parseFloat(price) };
+    var btn = document.getElementById('btn-' + id);
+    var card = document.getElementById('mc-' + id);
+    if (btn) { btn.textContent = '✓ Added'; btn.className = 'map-add-btn added'; }
+    if (card) card.classList.add('in-cart');
+    toast('"' + name.replace(/&amp;/g,'&') + '" added ✓');
   }
+  refreshCart();
+}
 
-  // ── ADD TO CART ──
-  function addCart(e, name, price) {
-    e.preventDefault();
-    showToast('"' + name + '" added — checkout coming soon!');
-  }
-
-  // ── BOOK CONSULT ──
-  function bookConsult(e, tier) {
-    e.preventDefault();
-    showToast(tier + ' consultation — booking system launching soon!');
-  }
-
-  // ── LEAD FORM ──
-  function submitLead(e) {
-    e.preventDefault();
-    var email = document.getElementById('lead-email').value;
-    if (!email) return;
-    document.getElementById('lead-email').value = '';
-    showToast('🎉 Checklist on its way to ' + email);
-  }
-
-  // ── SCROLL FADE-IN ──
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        entry.target.style.opacity = '1';
-        entry.target.style.transform = 'translateY(0)';
-      }
-    });
-  }, { threshold: 0.12 });
-
-  document.querySelectorAll('.product-card, .consult-card, .testi-card, .tool-card, .blog-card, .mem-card, .cat-card').forEach(function(el) {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity .5s ease, transform .5s ease, box-shadow .22s, border-color .2s';
-    observer.observe(el);
+function buyBundle() {
+  cart = { '__bundle__': { name: 'All 11 Maps — Complete Bundle', price: 5.00 } };
+  // Reset card buttons
+  document.querySelectorAll('.map-add-btn').forEach(function(b) {
+    b.textContent = '+ Add'; b.className = 'map-add-btn default';
   });
+  document.querySelectorAll('.map-card').forEach(function(c) { c.classList.remove('in-cart'); });
+  refreshCart();
+  openPayModal();
+}
 
-  // ── SMOOTH NAV ACTIVE ──
-  var sections = document.querySelectorAll('section[id]');
-  var navLinks = document.querySelectorAll('.nav-a[href^="#"]');
-  window.addEventListener('scroll', function() {
-    var pos = window.scrollY + 100;
-    sections.forEach(function(s) {
-      if (pos >= s.offsetTop && pos < s.offsetTop + s.offsetHeight) {
-        navLinks.forEach(function(a) {
-          a.style.color = a.getAttribute('href') === '#' + s.id
-            ? 'var(--gold)' : '';
-        });
-      }
-    });
+function clearCart() {
+  cart = {};
+  document.querySelectorAll('.map-add-btn').forEach(function(b) {
+    b.textContent = '+ Add'; b.className = 'map-add-btn default';
   });
+  document.querySelectorAll('.map-card').forEach(function(c) { c.classList.remove('in-cart'); });
+  refreshCart();
+}
+
+function cartTotal() {
+  return Object.values(cart).reduce(function(s, i) { return s + i.price; }, 0);
+}
+
+function cartCount() { return Object.keys(cart).length; }
+
+function refreshCart() {
+  var total = cartTotal();
+  var count = cartCount();
+  var strip = document.getElementById('cart-strip');
+  var badge = document.getElementById('cart-badge-count');
+  var navBubble = document.getElementById('nav-bubble');
+  var navBtn = document.getElementById('nav-cart-btn');
+  var itemsLabel = document.getElementById('cart-items-label');
+  var totalLabel = document.getElementById('cart-total-label');
+  var navCtaDesktop = document.getElementById('nav-cta-desktop');
+
+  if (count > 0) {
+    strip.classList.add('visible');
+    badge.textContent = count;
+    itemsLabel.textContent = count + ' item' + (count > 1 ? 's' : '');
+    totalLabel.textContent = '£' + total.toFixed(2);
+    navBubble.textContent = count;
+    navBubble.classList.add('show');
+    navBtn.style.display = 'inline-flex';
+    if (navCtaDesktop) navCtaDesktop.style.display = 'none';
+  } else {
+    strip.classList.remove('visible');
+    navBubble.classList.remove('show');
+    navBtn.style.display = 'none';
+    if (navCtaDesktop) navCtaDesktop.style.display = '';
+  }
+}
+
+/* ─── MOBILE NAV ──────────────────────────────────────────────── */
+function toggleMenu() {
+  var drawer = document.getElementById('nav-drawer');
+  var burger = document.getElementById('nav-burger');
+  var isOpen = drawer.classList.toggle('open');
+  burger.classList.toggle('open', isOpen);
+  document.body.style.overflow = isOpen ? 'hidden' : '';
+}
+function closeMenu() {
+  document.getElementById('nav-drawer').classList.remove('open');
+  document.getElementById('nav-burger').classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Close drawer on outside click
+document.addEventListener('click', function(e) {
+  var drawer = document.getElementById('nav-drawer');
+  var burger = document.getElementById('nav-burger');
+  if (drawer.classList.contains('open') && !drawer.contains(e.target) && !burger.contains(e.target)) {
+    closeMenu();
+  }
+});
+
+/* ─── PAYMENT MODAL ───────────────────────────────────────────── */
+var currentPM = 'card';
+
+function openPayModal() {
+  if (cartCount() === 0) { toast('Add at least one item first!'); return; }
+
+  // Populate order
+  var html = '';
+  var total = 0;
+  Object.values(cart).forEach(function(item) {
+    total += item.price;
+    html += '<div class="order-item">' +
+      '<span class="order-item-name">' + item.name.replace(/&amp;/g,'&') + '</span>' +
+      '<span class="order-item-price">£' + item.price.toFixed(2) + '</span>' +
+    '</div>';
+  });
+  document.getElementById('order-items-list').innerHTML = html;
+  document.getElementById('order-total-val').textContent = '£' + total.toFixed(2);
+  document.getElementById('pay-btn-amount').textContent = '£' + total.toFixed(2);
+
+  // Reset form
+  document.getElementById('pay-form-area').style.display = '';
+  document.getElementById('pay-success').style.display = 'none';
+  document.getElementById('pay-success').classList.remove('show');
+
+  var submitBtn = document.getElementById('pay-submit-btn');
+  submitBtn.disabled = false;
+  submitBtn.classList.remove('loading');
+  submitBtn.innerHTML = '🔒 Complete Purchase — <span id="pay-btn-amount">£' + total.toFixed(2) + '</span>';
+
+  switchPM('card');
+  document.getElementById('pay-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePayModal() {
+  document.getElementById('pay-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close on overlay click
+document.getElementById('pay-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closePayModal();
+});
+
+// Close on ESC
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closePayModal();
+});
+
+function switchPM(method) {
+  currentPM = method;
+  ['card','stripe','paypal','wallet'].forEach(function(m) {
+    document.getElementById('pmt-' + m).classList.toggle('active', m === method);
+    document.getElementById('panel-' + m).classList.toggle('active', m === method);
+  });
+  // Hide submit for PayPal (has its own buttons)
+  document.getElementById('pay-submit-btn').style.display = method === 'paypal' ? 'none' : 'flex';
+}
+
+/* ─── CARD FORMATTING ─────────────────────────────────────────── */
+function fmtCard(el) {
+  var v = el.value.replace(/\D/g, '').substring(0, 16);
+  el.value = v.replace(/(\d{4})(?=\d)/g, '$1  ');
+  var icon = document.getElementById('card-type-fi');
+  if (!icon) return;
+  if (/^4/.test(v))              { icon.textContent = 'VISA'; icon.style.fontSize = '10px'; icon.style.color = '#1a1f71'; }
+  else if (/^5[1-5]|^2[2-7]/.test(v)) { icon.textContent = '●● MC'; icon.style.fontSize = '10px'; icon.style.color = '#eb001b'; }
+  else if (/^3[47]/.test(v))     { icon.textContent = 'AMEX'; icon.style.fontSize = '10px'; icon.style.color = '#2e77bc'; }
+  else                           { icon.textContent = '💳'; icon.style.fontSize = '16px'; icon.style.color = ''; }
+}
+
+function fmtExpiry(el) {
+  var v = el.value.replace(/\D/g, '').substring(0, 4);
+  if (v.length >= 3) v = v.substring(0, 2) + ' / ' + v.substring(2);
+  el.value = v;
+}
+
+/* ─── VALIDATION ──────────────────────────────────────────────── */
+function validate() {
+  var fname = document.getElementById('f-fname').value.trim();
+  var email = document.getElementById('f-email').value.trim();
+  if (!fname) { toast('Please enter your first name.'); document.getElementById('f-fname').classList.add('err'); return false; }
+  if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { toast('Please enter a valid email address.'); document.getElementById('f-email').classList.add('err'); return false; }
+  document.getElementById('f-fname').classList.remove('err');
+  document.getElementById('f-email').classList.remove('err');
+
+  if (currentPM === 'card') {
+    var num = (document.getElementById('card-number').value || '').replace(/\s/g, '');
+    var exp = document.getElementById('card-expiry').value.trim();
+    var cvc = document.getElementById('card-cvc').value.trim();
+    var name = document.getElementById('card-name').value.trim();
+    if (num.length < 13) { toast('Please enter a valid card number.'); return false; }
+    if (!exp || exp.length < 7) { toast('Please enter card expiry (MM / YY).'); return false; }
+    if (cvc.length < 3) { toast('Please enter your CVC code.'); return false; }
+    if (!name) { toast('Please enter the name on your card.'); return false; }
+  }
+  return true;
+}
+
+/* ─── PROCESS PAYMENT ─────────────────────────────────────────── */
+function processPay() {
+  if (!validate()) return;
+
+  var btn = document.getElementById('pay-submit-btn');
+  btn.disabled = true;
+  btn.textContent = '';
+  btn.classList.add('loading');
+  btn.insertAdjacentText('beforeend', 'Processing…');
+
+  /*
+  ═══════════════════════════════════════════════════════════════
+  REAL STRIPE INTEGRATION — uncomment and configure:
+
+  var cardElement = elements.getElement('card');
+  stripe.createPaymentMethod({ type: 'card', card: cardElement,
+    billing_details: {
+      name: document.getElementById('f-fname').value + ' ' + document.getElementById('f-lname').value,
+      email: document.getElementById('f-email').value
+    }
+  }).then(function(result) {
+    if (result.error) {
+      showStripeError(result.error.message);
+      btn.disabled = false; btn.classList.remove('loading');
+    } else {
+      // Send result.paymentMethod.id to YOUR server endpoint
+      // Your server creates a PaymentIntent and confirms it
+      // Then call showSuccess() on successful confirmation
+      fetch('/create-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentMethodId: result.paymentMethod.id,
+          amount: Math.round(cartTotal() * 100), // pence
+          currency: 'gbp',
+          email: document.getElementById('f-email').value,
+          items: Object.values(cart)
+        })
+      })
+      .then(r => r.json())
+      .then(data => { if (data.success) showSuccess(); else showStripeError(data.error); });
+    }
+  });
+  ═══════════════════════════════════════════════════════════════
+  */
+
+  // Simulate payment processing (replace with real API call above)
+  setTimeout(function() {
+    showSuccess();
+  }, 1800);
+}
+
+function showStripeError(msg) {
+  var el = document.getElementById('stripe-error');
+  if (el) el.textContent = msg;
+  var btn = document.getElementById('pay-submit-btn');
+  btn.disabled = false; btn.classList.remove('loading');
+  btn.textContent = '🔒 Try Again';
+}
+
+/* ─── SUCCESS ──────────────────────────────────────────────────── */
+function generateCode() {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var code = 'LL';
+  for (var i = 0; i < 8; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+  return code;
+}
+
+function showSuccess() {
+  var code = generateCode();
+  // Save to localStorage
+  var codes = JSON.parse(localStorage.getItem('ll_codes') || '[]');
+  codes.push({ code: code, date: new Date().toISOString(), items: Object.values(cart) });
+  localStorage.setItem('ll_codes', JSON.stringify(codes));
+  localStorage.setItem('ll_auth', code);
+
+  // Build success items list
+  var itemsHtml = Object.values(cart).map(function(i) {
+    return '<div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid var(--border);">' +
+      '<span>' + i.name.replace(/&amp;/g,'&') + '</span>' +
+      '<span style="font-weight:700;">£' + i.price.toFixed(2) + '</span>' +
+    '</div>';
+  }).join('');
+  document.getElementById('success-items').innerHTML = itemsHtml;
+  document.getElementById('success-code').textContent = code;
+
+  // Show success, hide form
+  document.getElementById('pay-form-area').style.display = 'none';
+  document.getElementById('pay-success').style.display = 'block';
+  setTimeout(function() {
+    document.getElementById('pay-success').classList.add('show');
+  }, 50);
+
+  // Clear cart
+  clearCart();
+  toast('🎉 Payment complete! Code: ' + code);
+}
+
+function copyCode() {
+  var code = document.getElementById('success-code').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(code).then(function() { toast('Access code copied to clipboard!'); });
+  } else {
+    // Fallback
+    var ta = document.createElement('textarea');
+    ta.value = code; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    toast('Code copied!');
+  }
+}
+
+/* ─── LEAD FORM ───────────────────────────────────────────────── */
+function submitLead(e) {
+  e.preventDefault();
+  var email = document.getElementById('lead-email').value;
+  if (!email) return;
+  document.getElementById('lead-email').value = '';
+  toast('🎉 Checklist on its way to ' + email + '!');
+}
+
+/* ─── TOAST ───────────────────────────────────────────────────── */
+var toastTimer;
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.innerHTML = '<span style="color:var(--gold);">✓</span> ' + msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 3500);
+}
+
+/* ─── SCROLL ANIMATIONS ───────────────────────────────────────── */
+var io = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(function(el) { io.observe(el); });
+
+/* ─── NAV ACTIVE STATE ────────────────────────────────────────── */
+var sections = document.querySelectorAll('section[id], div[id="maps"]');
+var navLinks = document.querySelectorAll('.nav-links-desktop a');
+window.addEventListener('scroll', function() {
+  var pos = window.scrollY + 80;
+  sections.forEach(function(s) {
+    if (pos >= s.offsetTop && pos < s.offsetTop + s.offsetHeight) {
+      navLinks.forEach(function(a) {
+        a.style.color = a.getAttribute('href') === '#' + s.id ? 'var(--gold)' : '';
+      });
+    }
+  });
+}, { passive: true });
+
+/* ─── SHOW NAV CTA ON DESKTOP ─────────────────────────────────── */
+var navCtaD = document.getElementById('nav-cta-desktop');
+if (navCtaD) navCtaD.style.display = '';
 </script>
 
 </body>
